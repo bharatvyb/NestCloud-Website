@@ -1,0 +1,54 @@
+{
+  "brand": "NestCloud\u2122",
+  "description": "Unmodified user-supplied logo library",
+  "assets": [
+    {
+      "file": "solid/nestcloud-horizontal-dark-tm.png",
+      "width": 2000,
+      "height": 2000,
+      "sha256": "ec43e19218543491427c9fae1bc699a78528cbf74e720930933c549e57e478f4"
+    },
+    {
+      "file": "solid/nestcloud-horizontal-light-tm.png",
+      "width": 2000,
+      "height": 2000,
+      "sha256": "99cb1bc1b0f6ef17f7d1de1f3e721f3ebc6b51acd56c3a0fae2ad99c31758782"
+    },
+    {
+      "file": "solid/nestcloud-stacked-dark-tm.png",
+      "width": 2000,
+      "height": 2000,
+      "sha256": "b685a152a16fa40685609c311731fb4833676c0c899c80418e546ec729a464a2"
+    },
+    {
+      "file": "solid/nestcloud-stacked-light-tm.png",
+      "width": 2000,
+      "height": 2000,
+      "sha256": "71172ecb9f1e53da011c51874fe4b7eb47ae896313bf5566e7036515524c61aa"
+    },
+    {
+      "file": "transparent/nestcloud-horizontal-dark-tm.png",
+      "width": 2000,
+      "height": 2000,
+      "sha256": "82fb653aed14eae7aef9d5148d1996ca2fc073a1de9acfdca2f0197cd2296de5"
+    },
+    {
+      "file": "transparent/nestcloud-horizontal-light-tm.png",
+      "width": 2000,
+      "height": 2000,
+      "sha256": "85552fb91e6679cb3fc27d0b364efddaaa4d73b2b0a8ad8db177fc65b20d785a"
+    },
+    {
+      "file": "transparent/nestcloud-stacked-dark-tm.png",
+      "width": 2000,
+      "height": 2000,
+      "sha256": "a60ca41b7135b2a8249185ed4c078008fce6ac8159833b65727cd3f78cb26f87"
+    },
+    {
+      "file": "transparent/nestcloud-stacked-light-tm.png",
+      "width": 2000,
+      "height": 2000,
+      "sha256": "9a3b0593ee39bb0d02ade1ea6e32c48bd49cc9a443be405ebaa8d4fe88e5d48c"
+    }
+  ]
+}

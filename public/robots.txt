@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://nestcloud-family-home.sharpisle1026.chatgpt.site/sitemap.xml

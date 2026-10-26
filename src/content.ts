@@ -1,0 +1,75 @@
+export const productSpecs = [
+ ['Processor','Intel N150 quad-core'],
+ ['Memory','12 GB LPDDR5'],
+ ['Storage','512 GB or 1 TB SSD; optional dedicated 1 TB backup SSD'],
+ ['Network','Dual 2.5 Gigabit Ethernet'],
+ ['Power','USB-C · 12 V / 4 A'],
+ ['Dimensions','146 × 97.5 × 32 mm'],
+ ['Weight','390 g'],
+ ['Cooling','Quiet active cooling'],
+ ['SSD rating','Up to 7,100 MB/s, as published; actual performance varies'],
+ ['Warranty','1-year limited hardware warranty, subject to policy'],
+] as const;
+export const policyLinks=[
+ {label:'Terms & Conditions',href:'https://nestcloud.in/policies/tc'},
+ {label:'Privacy Policy',href:'https://nestcloud.in/policies/privacy-policy'},
+ {label:'Shipping & Delivery',href:'https://nestcloud.in/policies/shipping--delivery'},
+ {label:'Cancellation & Refund',href:'https://nestcloud.in/policies/cancellation--refund'},
+ {label:'Warranty',href:'https://nestcloud.in/policies/warranty'},
+ {label:'Service Level Agreement',href:'https://nestcloud.in/policies/sla'},
+];
+export const photoFeatures=[
+ {title:'Automatic phone backup',copy:'Back up selected photos and videos from your phone to NestCloud after setup.'},
+ {title:'A familiar timeline',copy:'Browse your family’s photos and videos in a clean, chronological view.'},
+ {title:'Albums for every chapter',copy:'Organize trips, birthdays, celebrations and the ordinary days in between.'},
+ {title:'Shared albums',copy:'Create albums family members can view and contribute to.'},
+ {title:'Personal accounts',copy:'Give each family member their own account and photo library.'},
+ {title:'Original-quality memories',copy:'Keep original photos and videos without relying on a public photo-storage subscription.'},
+];
+export const fileFeatures=[
+ {title:'Everything in one place',copy:'Bring documents, PDFs, school files, work records and family paperwork together.'},
+ {title:'Familiar folders',copy:'Organize your files using a folder structure that makes sense to you.'},
+ {title:'Upload and download',copy:'Move files between your devices and your NestCloud when you need them.'},
+ {title:'Share with your family',copy:'Share selected files or folders while keeping personal content separate.'},
+ {title:'Desktop sync',copy:'Keep selected files in sync across supported computers.'},
+ {title:'Mobile and remote access',copy:'Open and manage your files on supported devices at home or away after setup.'},
+];
+export const softwareFeatures=[
+ {title:'Photos & videos',copy:'Automatic backup, timelines, albums and original-quality memories.',icon:'photos',status:'Included'},
+ {title:'Files',copy:'Folders, uploads, downloads, sharing and supported desktop sync.',icon:'files',status:'Included'},
+ {title:'Family sharing',copy:'Personal accounts and libraries, with shared albums for the moments you choose.',icon:'family',status:'Included'},
+ {title:'Remote access',copy:'Connect from supported phones, tablets and computers after remote access is enabled.',icon:'remote',status:'Included'},
+ {title:'Home dashboard',copy:'Open apps, check status, restart or shut down your appliance from one place.',icon:'dashboard',status:'Included'},
+ {title:'Software updates',copy:'Supported OS updates can bring fixes, security improvements and new features over time.',icon:'updates',status:'Included'},
+ {title:'Backup Plus',copy:'A second physical 1 TB SSD keeps an additional copy inside the device.',icon:'backup',status:'Backup configuration'},
+ {title:'Family Box Office',copy:'A personal media library for enjoying family videos on supported TV devices.',icon:'media',status:'Planned · OS v1.1'},
+ {title:'Storage expansion',copy:'Additional storage support is planned for a future OS update; compatibility will be confirmed.',icon:'storage',status:'Planned · OS v1.2'},
+];
+export const faqs=[
+ {category:'Getting started',q:'What exactly is NestCloud?',a:'NestCloud Family is a private home cloud appliance. It stores your family’s photos, videos and files on hardware in your home, with apps and remote access for supported devices.'},
+ {category:'Getting started',q:'Do I need technical knowledge?',a:'NestCloud is designed for everyday families. Connect the supplied power adapter and your router, open nestcloud.local from a device on the same home network, then follow the guided setup and sign in to the supported apps.'},
+ {category:'Getting started',q:'Which devices can I use?',a:'Photos and Files are intended for supported iPhone, Android, Mac and Windows devices and web browsers. Check current app and OS compatibility during setup. TV support, including compatible Fire TV, Apple TV and Android TV devices, relates to the planned Family Box Office experience.'},
+ {category:'Storage & backup',q:'Are these different NestCloud models?',a:'No. There is one product: NestCloud Family. Choose 512 GB, 1 TB, or 1 TB + 1 TB Backup Plus. All configurations share the same core NestCloud OS software features.'},
+ {category:'Storage & backup',q:'Does Backup Plus give me 2 TB of storage?',a:'No. The Backup Plus configuration has two physical 1 TB SSDs. One holds your files and the other is configured for backup protection. You get 1 TB of usable personal storage, plus a dedicated 1 TB backup SSD.'},
+ {category:'Storage & backup',q:'How is automatic backup different from Backup Plus?',a:'Automatic backup copies selected content from a phone or supported computer to NestCloud. Backup Plus adds another copy on a second SSD inside NestCloud itself. A separate off-device backup of irreplaceable files is still important.'},
+ {category:'Storage & backup',q:'Can I add more storage later?',a:'Storage expansion is planned for NestCloud OS v1.2. The current product specification describes support for up to 4 TB of additional storage, subject to compatibility and release confirmation. It is not presented as an available feature today, and upgrade pricing and procedures have not been confirmed here.'},
+ {category:'Storage & backup',q:'How much space will I actually have?',a:'The configurations use nominal SSD capacities. Formatting, the operating system and supporting data use some space, so available file storage is lower. Photo and video capacity depends on file size, quality and format; fixed memory counts are not guaranteed.'},
+ {category:'Privacy & access',q:'Who owns my photos and files?',a:'You own your personal content and the hardware storing it. Your files live on NestCloud at home. You choose which albums, files or folders to share and with whom.'},
+ {category:'Privacy & access',q:'Can family members have private accounts?',a:'Yes. Family members can have separate accounts and personal libraries while sharing selected albums or files. Use the sharing and account controls to decide who can access each item.'},
+ {category:'Privacy & access',q:'Can I access NestCloud away from home?',a:'Yes, after remote access has been configured. Your NestCloud must be powered on and connected to the internet. Device, app, router and network settings can affect access.'},
+ {category:'Privacy & access',q:'What happens during an internet or power outage?',a:'An internet outage can interrupt remote access; local access can remain available while the appliance and local network are running. A power outage makes the appliance unavailable until power returns. Stored files do not require a continuous internet connection to remain on the SSD, but appropriate backups are still essential.'},
+ {category:'Software',q:'Is Family Box Office available now?',a:'Family Box Office is planned for a future NestCloud OS v1.1 update. The intended experience brings backed-up family videos and personal media to supported TV devices. It is not available today. Timing and final compatibility are subject to release confirmation.'},
+ {category:'Software',q:'What is NestCloud OS built on?',a:'NestCloud integrates established open-source technologies: Ubuntu as a foundation, Immich for Photos, Nextcloud for Files, and Jellyfin for the planned Family Box Office experience. These are independent upstream projects, customized and integrated for NestCloud.'},
+ {category:'Software',q:'Will I receive software updates?',a:'Software updates and support are included for supported devices. Updates may provide fixes, security improvements, compatibility changes and new features. Planned features are not current functionality or guaranteed release commitments.'},
+ {category:'Orders & support',q:'Is there a monthly NestCloud subscription?',a:'There are no mandatory recurring NestCloud subscription fees. The device is a one-time purchase. Electricity, internet, any maintenance and optional third-party services are separate.'},
+ {category:'Orders & support',q:'Can I place an order on this website?',a:'You can configure NestCloud Family and review your selection. This development site does not collect payments or submit orders. Availability, taxes, shipping, order terms and the approved payment flow must be confirmed before checkout is enabled.'},
+ {category:'Orders & support',q:'Where will NestCloud be available?',a:'India is the launch market. International shipping is not offered at launch. Delivery serviceability and timelines will be confirmed through the approved order process.'},
+ {category:'Orders & support',q:'What warranty is included?',a:'The published NestCloud policy provides a 1-year limited hardware warranty, generally starting at delivery, subject to the complete policy and your order documentation. Hardware service does not guarantee preservation or recovery of personal data. Keep proof of purchase and appropriate separate backups.'},
+ {category:'Orders & support',q:'How do I get help?',a:'Use the official NestCloud support page for setup, access, supported software or hardware issues. The published SLA targets an initial response within 1–2 business days during normal business operations. That is a response target, not a guaranteed resolution time.'},
+];
+export const troubleshooting={
+ setup:{title:'I can’t open nestcloud.local',steps:['Check that NestCloud is connected to power and your router.','Put your phone or computer on the same home network.','Try the local address again in a web browser.','If the local name does not resolve, ask support for help finding the appliance on your router. Do not reset or format its storage.']},
+ backup:{title:'My photos aren’t backing up',steps:['Confirm you are signed in to the Photos app and have selected content for backup.','Check the app’s photo permissions and background activity settings.','Confirm NestCloud is online and has available storage.','Keep the original files until you have verified that the backup is complete.']},
+ remote:{title:'I can’t connect away from home',steps:['Check whether NestCloud is accessible on the home network first.','Verify the appliance and home router have power and internet access.','Confirm remote access has been enabled through the guided settings.','Check the supported app’s connection settings, then contact support if access is still unavailable.']},
+ hardware:{title:'I think there is a hardware problem',steps:['Check the supplied power adapter, cables and network connection.','Note the device status and the exact symptom or error.','Have your invoice or order number and serial number ready for support.','Contact support before opening the device or shipping it for service. Keep a separate backup before servicing where possible.']},
+} as const;
