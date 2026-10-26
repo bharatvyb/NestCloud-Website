@@ -51,3 +51,6 @@
 .window-brand{gap:7px}.window-brand>.brand-asset{display:block}.software-top>.dashboard-brand{flex-shrink:0}
 @media(max-width:850px){.privacy-brand{width:145px}.roadmap-brand{width:140px}}
 @media(max-width:600px){.privacy-brand{width:148px}.story-brand{width:160px;margin-bottom:29px}.roadmap-brand{width:130px;margin-bottom:29px}.dashboard-brand{width:110px}.window-logo{width:75px}}
+
+/* Official brand artwork in the Why NestCloud hero. */
+.why-art{min-height:320px;gap:24px}.why-art:before{width:300px;height:300px;top:0;background:radial-gradient(circle,#fff 0%,#f5f9ff 72%)}.why-brand{position:relative;width:225px;max-width:75%;z-index:1}.why-art>p{position:relative;margin:0;color:#536e91;font-size:11px;z-index:1}@media(max-width:600px){.why-art{min-height:270px;gap:20px}.why-art:before{width:260px;height:260px}.why-brand{width:195px}}
