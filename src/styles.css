@@ -54,3 +54,14 @@
 
 /* Official brand artwork in the Why NestCloud hero. */
 .why-art{min-height:320px;gap:24px}.why-art:before{width:300px;height:300px;top:0;background:radial-gradient(circle,#fff 0%,#f5f9ff 72%)}.why-brand{position:relative;width:225px;max-width:75%;z-index:1}.why-art>p{position:relative;margin:0;color:#536e91;font-size:11px;z-index:1}@media(max-width:600px){.why-art{min-height:270px;gap:20px}.why-art:before{width:260px;height:260px}.why-brand{width:195px}}
+
+/* Shared responsive footer: readable links and deliberate columns at every size. */
+.site-footer{padding:64px 0 0;border-top:1px solid var(--line);background:#f8fafd}
+.footer-grid{display:grid;grid-template-columns:1.2fr .85fr 1.15fr;gap:64px;padding-bottom:48px;align-items:start}
+.footer-brand .logo{margin-bottom:14px}.footer-brand>p{font-size:14px;color:#465b75;line-height:1.6}.footer-brand>span{display:block;margin-top:14px;font-size:12px;line-height:1.8;color:#617189}
+.footer-link-group{min-width:0}.footer-link-group h2{font-size:13px;font-weight:650;letter-spacing:0;line-height:1.5;margin:3px 0 15px;color:var(--ink)}
+.footer-link-group>div{display:grid;gap:2px}.footer-link-group a{display:flex;align-items:center;min-height:40px;width:fit-content;max-width:100%;font-size:13px;line-height:1.5;color:#52647d;padding:8px 0;transition:color .2s;overflow-wrap:anywhere}.footer-link-group a:hover{color:var(--blue);text-decoration:underline;text-underline-offset:4px}
+.footer-company{border-top:1px solid #dfe6ef;padding-top:23px;padding-bottom:25px;display:flex;align-items:flex-start;justify-content:space-between;gap:20px}.footer-company p{font-size:11px;line-height:1.8;color:#5e6e84}.footer-country{display:inline-block;border-left:1px solid #cdd7e5;padding-left:12px;margin-left:10px}
+@media(max-width:1000px){.footer-grid{grid-template-columns:1fr 1fr;gap:36px 48px}.footer-brand{grid-column:1/-1;display:block}.footer-brand>span{margin-top:8px}.footer-company{flex-direction:column;gap:6px}}
+@media(max-width:600px){.site-footer{padding-top:40px}.footer-grid{gap:32px 22px;padding-bottom:32px;grid-template-columns:1fr 1.1fr}.footer-brand .logo{margin-bottom:12px}.footer-brand>p{font-size:14px}.footer-brand>span{font-size:12px}.footer-link-group h2{font-size:12px;margin-bottom:12px}.footer-link-group a{font-size:12px;min-height:44px;padding:9px 0}.footer-company{padding-top:20px;padding-bottom:24px;gap:10px}.footer-company p{font-size:11px}.footer-company p>span:not(.footer-country){display:block}.footer-country{border:0;padding:0;margin:0;display:block}}
+@media(max-width:359px){.footer-grid{grid-template-columns:1fr}.footer-brand{grid-column:auto}}
