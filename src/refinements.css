@@ -43,3 +43,13 @@ p{color:var(--muted)}.eyebrow,.mini-label{font-size:11px;line-height:1.6}
 
 .faq-search button{min-width:44px;min-height:44px;display:flex;align-items:center;justify-content:center}.issue-select{min-height:48px;font-size:14px}.result-count{font-size:12px}.comparison-table th,.comparison-table td{font-size:12px;line-height:1.6}.comparison-table th small{font-size:11px}.setup-guide small,.support-shortcuts span{font-size:12px;line-height:1.7}.troubleshooting-card li,.support-policy-grid p,.care-note p,.included-support p{font-size:14px;line-height:1.8}
 @media(min-width:601px) and (max-width:1000px){.configuration-section{display:grid;grid-template-columns:1fr}.config-product{max-width:700px;width:100%;min-height:0;margin:auto}.config-form{width:100%}.order-page-grid{grid-template-columns:1fr;gap:32px}.order-summary{position:static;width:100%}.order-device-stage img{max-width:620px;margin:auto}}
+/* Purchase-critical explanations remain readable on phones, not caption-sized. */
+@media(max-width:600px){
+ .product-hero .hero-footnote,.option-detail,.config-detail>span,.purchase-note,
+ .purchase-price span,.order-storage small,.order-configuration-detail>span,
+ .checkout-status p,.order-summary .fine-print,.configuration-section .included-note,
+ .comparison-table th,.comparison-table td,.comparison-table th small{font-size:14px;line-height:1.65}
+ .option-detail{max-width:none}.option-price,.order-storage label>strong{font-size:16px}
+ .storage-option{min-height:132px}.option-end{align-self:center}
+ .comparison-wrap+.fine-print,.care-note p,.included-support p{font-size:14px;line-height:1.8}
+}

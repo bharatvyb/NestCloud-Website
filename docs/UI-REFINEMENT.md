@@ -41,3 +41,7 @@ Final production JS: 310.86 kB raw / 93.21 kB gzip. CSS: 98.69 kB raw / 20.45 kB
 Payments and actual orders remain disabled pending availability, taxes/shipping, approved terms and the payment integration. Upcoming OS features remain marked planned. DNS, live domain settings and payment integrations are untouched. Formal Lighthouse and broader assistive-technology audits remain follow-up work; these checks do not establish WCAG conformance.
 
 Before/after hero comparisons are in `docs/review/`. The full 90-view screenshot evidence and browser check JSON are delivered alongside this task's local report.
+
+## Final review supersedes earlier validation counts
+
+See [FINAL-HARDENING.md](FINAL-HARDENING.md) for the shared configuration-store corrections, 19-test suite, all 15 routes, six complete local policy documents, and final screenshot manifest. Earlier nine-route/four-test figures above describe the initial refinement checkpoint. The current screenshot files in docs/review replace those initial captures.

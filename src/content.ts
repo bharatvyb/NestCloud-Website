@@ -11,12 +11,12 @@ export const productSpecs = [
  ['Warranty','1-year limited hardware warranty, subject to policy'],
 ] as const;
 export const policyLinks=[
- {label:'Terms & Conditions',href:'https://nestcloud.in/policies/tc'},
- {label:'Privacy Policy',href:'https://nestcloud.in/policies/privacy-policy'},
- {label:'Shipping & Delivery',href:'https://nestcloud.in/policies/shipping--delivery'},
- {label:'Cancellation & Refund',href:'https://nestcloud.in/policies/cancellation--refund'},
- {label:'Warranty',href:'https://nestcloud.in/policies/warranty'},
- {label:'Service Level Agreement',href:'https://nestcloud.in/policies/sla'},
+ {label:'Terms & Conditions',href:'/policies/tc',source:'https://nestcloud.in/policies/tc'},
+ {label:'Privacy Policy',href:'/policies/privacy-policy',source:'https://nestcloud.in/policies/privacy-policy'},
+ {label:'Shipping & Delivery',href:'/policies/shipping--delivery',source:'https://nestcloud.in/policies/shipping--delivery'},
+ {label:'Cancellation & Refund',href:'/policies/cancellation--refund',source:'https://nestcloud.in/policies/cancellation--refund'},
+ {label:'Warranty',href:'/policies/warranty',source:'https://nestcloud.in/policies/warranty'},
+ {label:'Service Level Agreement',href:'/policies/sla',source:'https://nestcloud.in/policies/sla'},
 ];
 export const photoFeatures=[
  {title:'Automatic phone backup',copy:'Back up selected photos and videos from your phone to NestCloud after setup.'},

@@ -1,0 +1,50 @@
+{
+  "captured": "2026-10-27",
+  "baselineCommit": "6a32e5b74f8b51e8dbfefb943a38ac263b711d2d",
+  "viewports": [
+    {
+      "width": 375,
+      "height": 1000
+    },
+    {
+      "width": 1440,
+      "height": 1000
+    }
+  ],
+  "notes": "Hero viewport captures; configurator captures include surrounding context. After images were captured from the built source with the following checksums. CI does not deploy this branch.",
+  "sourceSHA256": {
+    "index.html": "fbdafdd38dd8e245866cbfabaa3ab5f46b4eb716ebde4c72ae22b5945be9ea07",
+    "package-lock.json": "6c0458a74e2a34c984cc972cb1240c09ae8b1e5acf1e15d2540c25ca90de89e7",
+    "package.json": "3c3ea61f896cdc473e6f4c9d106b8834eefe67e330f3e47bde213a29324194c1",
+    "scripts/export-pages.mjs": "57efc7dcba6a9cede25e7b559f77a5b04088aa2fd10a83696509bb6cb4461f4e",
+    "src/App.tsx": "a208571553d921b93c2823a64869df75a1719778a4f53a87dd93e5721da51965",
+    "src/DeviceImage.tsx": "a1be7e452bec3cf097263d1f7b100c8e56f044eedc6b56c1a478fe619dbb67e1",
+    "src/Home.tsx": "43bd5b060ebc6cfb44d01686e53035883985509a3f3fad60228a4f9274f4e545",
+    "src/Pages.tsx": "c42927eadd9a9e2e2b262e03cd13556f23ef888d8060d7663ad4559e1c5c5901",
+    "src/PolicyDocument.tsx": "239d6a5bf8037d76d38ec43715a7bbad204cdc4781ba9b4819f3cc2942f14b28",
+    "src/brand.tsx": "90c653eeb100a28c553611f05234636b9d487896ee504d4acde4d48b58bc6ab2",
+    "src/config.ts": "060f6ea27031a4da48818bfeb276c6cd457205b4e5b3bd61b12adff606e67db8",
+    "src/configurationStore.ts": "18afece3c0dc11569c05c8f8fbdd75f6bd24645883bcca0435a67d62f04facbe",
+    "src/content.ts": "6ff3a042ba84d088aa27595d99b69bcb9f85e020a555c6ca7dcc97677a3e36d3",
+    "src/main.tsx": "fd30230fded040714c30179471a669fb627b2c39d1f7dbe05dc54346e092ffa7",
+    "src/policies.css": "3337128e93a1648a809c4abecf78a01c42d2beb0248530d4ba307a016b86f829",
+    "src/policies.json": "1d359f8b2169ac53f44b5e8b7eb739e17b11e0e4fca103659cc3675c8a2d4910",
+    "src/refinements.css": "eaf32670cbd6f762051052fcc019145f800554bbfe153ef71156f83ccee5884f",
+    "src/routes.json": "f885eb03a12ce362f51736d6850e22d9483e6935466ea52ea86c6f68050570ab",
+    "src/selection.d.mts": "413b3c689c312c988b4831d2f6cb53db6a8b9a02823cd8e300262686d06191f7",
+    "src/selection.mjs": "acfff36200e3942f816d406b156d3291ffd4e1b5805e32ccb847f460c345f01c",
+    "src/site.ts": "e16593d8cc222448fbeee8089066031cc19ee65622d41b9faaa135460f56be2a",
+    "src/styles.css": "da03f107afb4a90fca39142b84038bc2e8d82fd17e71fa9d97a90e88af333053",
+    "src/useConfiguration.ts": "5419d6d2e56707d4fd61ae818d3c0601b4e43056baee7139cb7894bbfcc3cf4c",
+    "src/vite-env.d.ts": "65996936fbb042915f7b74a200fcdde7e410f32a669b1ab9597cfaa4b0faddb5",
+    "vite.config.ts": "bba4b76f35e62dfc34eb3864d59a3e203d7b8e34edf20743f142c4a956585cc2"
+  },
+  "screenshotsSHA256": {
+    "docs/review/configurator-desktop.png": "999407944a2f868981a372cd063c13e1f1410f49f36522f567dcd27ee8ff98c6",
+    "docs/review/configurator-mobile.png": "984d36570b935d6f5c7db1d0caa8b2852015e9ed83db5b653270a7ff0365bdd2",
+    "docs/review/hero-desktop.png": "5ff3d88691a9780a9a591cb46f1c42c27de73291d05c2432dd02f00a56193880",
+    "docs/review/hero-mobile.png": "d31435d47f61455172251954c1479b19264205426c9e37322e48ef2302ceeb35",
+    "docs/review/policy-desktop.png": "00d469b4c3756b06f0a75808bfaeabf47ad6a196520fde605cf233cb8caaca8c",
+    "docs/review/policy-mobile.png": "5d1c6a0a8079593d6503822c94e31a812ed30240ad30dd4eb652ed5c0af6ced5"
+  }
+}

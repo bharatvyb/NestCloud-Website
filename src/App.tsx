@@ -1,7 +1,9 @@
 import { sitePath, routePath } from './site';
-import React, { useEffect } from 'react';
+import React, { lazy, Suspense, useEffect } from 'react';
+import { policyLinks } from './content';
+const PolicyDocument=lazy(()=>import('./PolicyDocument'));
 import HomePage, { Header, Footer } from './Home';
 import { FamilyPage, OSPage, WhyPage, HowPage, BackupPage, SupportPage, OrderPage, PoliciesPage } from './Pages';
 import routes from './routes.json';
-const pages:Record<string,React.ComponentType>={'/':HomePage,'/family':FamilyPage,'/nestcloud-os':OSPage,'/why-nestcloud':WhyPage,'/how-it-works':HowPage,'/backup-plus':BackupPage,'/support':SupportPage,'/order':OrderPage,'/policies':PoliciesPage};
+const pages:Record<string,React.ComponentType>={'/':HomePage,'/family':FamilyPage,'/nestcloud-os':OSPage,'/why-nestcloud':WhyPage,'/how-it-works':HowPage,'/backup-plus':BackupPage,'/support':SupportPage,'/order':OrderPage,'/policies':PoliciesPage,...Object.fromEntries(policyLinks.map(link=>[link.href,()=> <Suspense fallback={<section className="container section" role="status">Loading policy…</section>}><PolicyDocument path={link.href}/></Suspense>]))};
 export default function App(){useEffect(()=>{const hash=window.location.hash.slice(1);if(!hash)return;let id;try{id=decodeURIComponent(hash)}catch{return}const frame=requestAnimationFrame(()=>document.getElementById(id)?.scrollIntoView({behavior:'instant',block:'start'}));return()=>cancelAnimationFrame(frame)},[]);const path=routePath(window.location.pathname);const Page=pages[path];const route=routes.find(route=>route.path===path);if(route){document.title=route.title;document.querySelector('meta[name="description"]')?.setAttribute('content',route.description);}return <><a className="skip-link" href="#main">Skip to content</a><Header/><main id="main">{Page?<Page/>:<section className="container section not-found"><p className="eyebrow">A LITTLE DETOUR</p><h1>This page hasn’t found its home.</h1><p>Let’s get you back to NestCloud.</p><a href={sitePath('/')} className="button">Back home</a></section>}</main><Footer/></>}
