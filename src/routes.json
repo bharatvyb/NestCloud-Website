@@ -37,7 +37,7 @@
   {
     "path": "/order",
     "title": "Your NestCloud Family — Review your configuration",
-    "description": "Review your chosen NestCloud Family storage configuration and one-time product price. Payments and order submission are not enabled."
+    "description": "Choose your NestCloud Family storage configuration, review the product price and contact our team for availability, delivery and ordering."
   },
   {
     "path": "/policies",
@@ -47,31 +47,31 @@
   {
     "path": "/policies/tc",
     "title": "Terms & Conditions — NestCloud",
-    "description": "Read the complete NestCloud terms & conditions document, reproduced from the official NestCloud website. Last updated: 7 August 2026."
+    "description": "Read the NestCloud terms & conditions policy. Last updated: 7 August 2026."
   },
   {
     "path": "/policies/privacy-policy",
     "title": "Privacy Policy — NestCloud",
-    "description": "Read the complete NestCloud privacy policy document, reproduced from the official NestCloud website. Last updated: 7 August 2026."
+    "description": "Read the NestCloud privacy policy policy. Last updated: 7 August 2026."
   },
   {
     "path": "/policies/shipping--delivery",
     "title": "Shipping & Delivery Policy — NestCloud",
-    "description": "Read the complete NestCloud shipping & delivery document, reproduced from the official NestCloud website. Last updated: 7 August 2026."
+    "description": "Read the NestCloud shipping & delivery policy. Last updated: 7 August 2026."
   },
   {
     "path": "/policies/cancellation--refund",
     "title": "Cancellation & Refund Policy — NestCloud",
-    "description": "Read the complete NestCloud cancellation & refund document, reproduced from the official NestCloud website. Last updated: 7 August 2026."
+    "description": "Read the NestCloud cancellation & refund policy. Last updated: 7 August 2026."
   },
   {
     "path": "/policies/warranty",
     "title": "NestCloud Warranty Policy — NestCloud",
-    "description": "Read the complete NestCloud warranty document, reproduced from the official NestCloud website. Last updated: 7 August 2026."
+    "description": "Read the NestCloud warranty policy. Last updated: 7 August 2026."
   },
   {
     "path": "/policies/sla",
     "title": "Service Level Agreement — NestCloud",
-    "description": "Read the complete NestCloud service level agreement document, reproduced from the official NestCloud website. Last updated: 17 Sep 2026."
+    "description": "Read the NestCloud service level agreement policy. Last updated: 17 Sep 2026."
   }
 ]

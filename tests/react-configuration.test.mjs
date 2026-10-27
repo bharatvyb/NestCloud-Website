@@ -13,7 +13,7 @@ import { createRoot } from 'react-dom/client';
 const require = createRequire(import.meta.url);
 const source = fileURLToPath(new URL('../src/', import.meta.url));
 // Compile the production TSX, never a reimplementation of its behavior.
-const result = await build({stdin:{contents:`export { Configurator } from './Home'; export { default as HomePage } from './Home'; export { OrderPage, FamilyPage } from './Pages'; export { Footer } from './Home'; export { default as PolicyDocument } from './PolicyDocument';`,resolveDir:source,loader:'tsx'},bundle:true,write:false,format:'esm',platform:'node',packages:'external',loader:{'.css':'empty'},jsx:'automatic',define:{'import.meta.env.BASE_URL':'"/NestCloud-Website/"'},plugins:process.env.CONFIGURATION_HOOK_BEFORE?[{name:'baseline',setup(b){b.onLoad({filter:/useConfiguration\.ts$/},async()=>({contents:await readFile(process.env.CONFIGURATION_HOOK_BEFORE,'utf8'),loader:'ts',resolveDir:source}))}}]:[]});
+const result = await build({stdin:{contents:`export { Configurator } from './Home'; export { default as HomePage } from './Home'; export { OrderPage, FamilyPage, OSPage, WhyPage, HowPage, BackupPage, SupportPage, PoliciesPage } from './Pages'; export { Footer } from './Home'; export { default as PolicyDocument } from './PolicyDocument';`,resolveDir:source,loader:'tsx'},bundle:true,write:false,format:'esm',platform:'node',packages:'external',loader:{'.css':'empty'},jsx:'automatic',define:{'import.meta.env.BASE_URL':'"/NestCloud-Website/"'},plugins:process.env.CONFIGURATION_HOOK_BEFORE?[{name:'baseline',setup(b){b.onLoad({filter:/useConfiguration\.ts$/},async()=>({contents:await readFile(process.env.CONFIGURATION_HOOK_BEFORE,'utf8'),loader:'ts',resolveDir:source}))}}]:[]});
 const compiled = result.outputFiles[0].text.replace(/from "([^"./][^"]*)"/g,(_,specifier)=>`from ${JSON.stringify(pathToFileURL(require.resolve(specifier)).href)}`);
 let sequence=0, dom, roots=[], UI;
 globalThis.IS_REACT_ACT_ENVIRONMENT=true;
@@ -126,4 +126,30 @@ test('Helpful details footer destinations are all local policy pages',()=>{
  assert.equal(links.length,7);
  for(const link of links){assert.ok(link.getAttribute('href').startsWith('/NestCloud-Website/policies'));assert.equal(link.getAttribute('target'),null)}
  rendered.window.close();
+});
+
+// Customer-facing copy must never expose migration or implementation status.
+test('all 15 pages use customer-facing launch copy while preserving product limits',async()=>{
+ const pages=[UI.HomePage,UI.FamilyPage,UI.OSPage,UI.WhyPage,UI.HowPage,UI.BackupPage,UI.SupportPage,UI.OrderPage,UI.PoliciesPage];
+ const forbidden=/development (?:web)?site|copied from|reproduced from|view original document|checkout (?:will open|not yet)|payments are not enabled|before payment is enabled|Razorpay integration|approved (?:order|payment) flow|not presented as a currently available feature|confirmed here/i;
+ for(const Page of pages){
+  const container=await mount(Page);
+  assert.doesNotMatch(container.textContent,forbidden,Page.name);
+ }
+ for(const policy of policySources){
+  const rendered=new JSDOM(renderToStaticMarkup(React.createElement(UI.PolicyDocument,{path:policy.path})));
+  assert.doesNotMatch(rendered.window.document.body.textContent,forbidden,policy.path);
+  assert.equal(rendered.window.document.querySelector('a[href="'+policy.sourceUrl+'"]'),null);
+  rendered.window.close();
+ }
+ const order=await mount(UI.OrderPage);
+ const contact=order.querySelector('.order-summary a.button');
+ assert.match(contact.getAttribute('href'),/^\/NestCloud-Website\/support\?configuration=1tb#contact$/);
+ await click(order.querySelectorAll('input')[2]);
+ assert.match(contact.getAttribute('href'),/configuration=backup#contact$/);
+ assert.match(order.querySelector('.summary-total').textContent,/81,900/);
+ assert.match(order.textContent,/before you pay/);
+ const os=await mount(UI.OSPage);
+ assert.match(os.textContent,/Planned · NestCloud OS v1.1/);
+ assert.match(os.textContent,/not currently available features/);
 });
