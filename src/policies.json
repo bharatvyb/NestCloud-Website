@@ -1,0 +1,1949 @@
+[
+  {
+    "slug": "terms-and-conditions",
+    "path": "/policies/tc",
+    "label": "Terms & Conditions",
+    "title": "Terms & Conditions",
+    "updated": "Last updated: 7 August 2026",
+    "sourceUrl": "https://nestcloud.in/policies/tc",
+    "blocks": [
+      {
+        "type": "paragraph",
+        "text": "Welcome to NestCloud. By accessing nestcloud.in, submitting a reservation, placing an order, or purchasing a NestCloud product, you agree to these Terms & Conditions."
+      },
+      {
+        "type": "heading",
+        "text": "1. About NestCloud",
+        "id": "section-1"
+      },
+      {
+        "type": "paragraph",
+        "text": "NestCloud is a private home cloud appliance designed to help families store, manage and access their photos, videos, files and supported media from their own home."
+      },
+      {
+        "type": "paragraph",
+        "text": "Product features, specifications, software capabilities and supported applications may evolve through NestCloud OS updates."
+      },
+      {
+        "type": "heading",
+        "text": "2. Availability",
+        "id": "section-2"
+      },
+      {
+        "type": "paragraph",
+        "text": "NestCloud is currently available for purchase and delivery within India only."
+      },
+      {
+        "type": "paragraph",
+        "text": "International shipping is not available at launch."
+      },
+      {
+        "type": "paragraph",
+        "text": "Availability may vary depending on stock, location, configuration and serviceability."
+      },
+      {
+        "type": "heading",
+        "text": "3. Reservations",
+        "id": "section-3"
+      },
+      {
+        "type": "paragraph",
+        "text": "Submitting a NestCloud reservation is free and does not require payment."
+      },
+      {
+        "type": "paragraph",
+        "text": "A reservation:"
+      },
+      {
+        "type": "paragraph",
+        "text": "expresses your interest in purchasing NestCloud;"
+      },
+      {
+        "type": "paragraph",
+        "text": "does not constitute a confirmed order;"
+      },
+      {
+        "type": "paragraph",
+        "text": "does not guarantee product allocation; and"
+      },
+      {
+        "type": "paragraph",
+        "text": "remains subject to availability and final confirmation from NestCloud."
+      },
+      {
+        "type": "paragraph",
+        "text": "Initial launch availability may be limited and reservations may be reviewed in the order received."
+      },
+      {
+        "type": "heading",
+        "text": "4. Orders",
+        "id": "section-4"
+      },
+      {
+        "type": "paragraph",
+        "text": "An order is considered confirmed only after:"
+      },
+      {
+        "type": "paragraph",
+        "text": "the selected NestCloud configuration has been confirmed;"
+      },
+      {
+        "type": "paragraph",
+        "text": "applicable pricing and delivery details have been communicated;"
+      },
+      {
+        "type": "paragraph",
+        "text": "the required payment or preorder advance has been successfully received; and"
+      },
+      {
+        "type": "paragraph",
+        "text": "NestCloud has confirmed the order."
+      },
+      {
+        "type": "paragraph",
+        "text": "For preorder orders, payment of the applicable preorder advance constitutes acceptance of the preorder, cancellation and refund terms stated in Section 7 and the applicable Cancellation &\nRefund Policy."
+      },
+      {
+        "type": "paragraph",
+        "text": "We reserve the right to decline or cancel an order where necessary, including in cases involving incorrect pricing, duplicate orders, unavailable stock, suspected fraud, unsupported delivery\nlocations or other operational reasons."
+      },
+      {
+        "type": "paragraph",
+        "text": "If NestCloud cancels a confirmed order for reasons attributable to NestCloud, any amount received toward that order will be refunded to the customer in accordance with our Cancellation &\nRefund Policy."
+      },
+      {
+        "type": "heading",
+        "text": "5. Pricing",
+        "id": "section-5"
+      },
+      {
+        "type": "paragraph",
+        "text": "All product prices will be displayed or communicated before payment."
+      },
+      {
+        "type": "paragraph",
+        "text": "Applicable taxes, delivery charges or other charges, if any, will be communicated before the customer completes payment."
+      },
+      {
+        "type": "paragraph",
+        "text": "Prices and product configurations may change until an order has been confirmed."
+      },
+      {
+        "type": "paragraph",
+        "text": "Once a preorder has been confirmed and the preorder advance has been received, the price of the selected configuration communicated for that order will apply, unless the customer\nsubsequently requests a change in configuration."
+      },
+      {
+        "type": "heading",
+        "text": "6. Payments",
+        "id": "section-6"
+      },
+      {
+        "type": "paragraph",
+        "text": "Payments must be made only through payment methods or payment links officially provided by NestCloud."
+      },
+      {
+        "type": "paragraph",
+        "text": "We currently use authorised third-party payment service providers such as Razorpay to process online payments."
+      },
+      {
+        "type": "paragraph",
+        "text": "NestCloud will never ask customers to share:"
+      },
+      {
+        "type": "paragraph",
+        "text": "UPI PINs;"
+      },
+      {
+        "type": "paragraph",
+        "text": "card PINs;"
+      },
+      {
+        "type": "paragraph",
+        "text": "CVVs;"
+      },
+      {
+        "type": "paragraph",
+        "text": "internet banking passwords; or"
+      },
+      {
+        "type": "paragraph",
+        "text": "OTPs outside an authorised payment flow."
+      },
+      {
+        "type": "paragraph",
+        "text": "For preorders, the initial payment may constitute only part of the total order value. Any preorder advance paid will be adjusted against the final amount payable for the product. The\nremaining balance must be paid before dispatch unless otherwise agreed in writing by NestCloud."
+      },
+      {
+        "type": "heading",
+        "text": "7. Preorders",
+        "id": "section-7"
+      },
+      {
+        "type": "paragraph",
+        "text": "Some NestCloud products may be offered on a preorder basis."
+      },
+      {
+        "type": "paragraph",
+        "text": "To confirm a preorder, the customer may be required to pay a ₹10,000 preorder advance or such other amount as communicated at the time of ordering."
+      },
+      {
+        "type": "paragraph",
+        "text": "Once the preorder advance is successfully received and the order is confirmed by NestCloud, procurement, allocation, assembly, configuration and testing activities may begin specifically\nfor that customer’s device."
+      },
+      {
+        "type": "paragraph",
+        "text": "Accordingly, the ₹10,000 preorder advance is non-refundable if the customer later chooses to cancel the preorder, except where:"
+      },
+      {
+        "type": "list",
+        "ordered": false,
+        "items": [
+          "NestCloud is unable to fulfil the confirmed order;",
+          "NestCloud cancels the order; or",
+          "a refund is otherwise required under applicable law."
+        ]
+      },
+      {
+        "type": "paragraph",
+        "text": "The preorder advance will be fully adjusted against the final purchase price of the selected NestCloud Edition."
+      },
+      {
+        "type": "paragraph",
+        "text": "The remaining balance must be paid once the customer is informed that the device is ready for dispatch and before the device is shipped."
+      },
+      {
+        "type": "paragraph",
+        "text": "NestCloud currently aims to have preorder devices ready for dispatch within 10 working days from receipt of the preorder advance, unless a different timeline is communicated to the\ncustomer."
+      },
+      {
+        "type": "paragraph",
+        "text": "Any fulfilment or dispatch timeline is an estimate and may change because of component availability, procurement, assembly, testing, logistics or circumstances outside our reasonable\ncontrol."
+      },
+      {
+        "type": "paragraph",
+        "text": "If there is a material delay, NestCloud will communicate the revised expected timeline to the customer."
+      },
+      {
+        "type": "heading",
+        "text": "8. Product Specifications",
+        "id": "section-8"
+      },
+      {
+        "type": "paragraph",
+        "text": "We make reasonable efforts to ensure that product specifications and descriptions shown on the website are accurate."
+      },
+      {
+        "type": "paragraph",
+        "text": "Minor changes may be made to hardware components, packaging, software or other elements where necessary, provided such changes do not materially reduce the core functionality of\nthe product."
+      },
+      {
+        "type": "paragraph",
+        "text": "Actual usable storage capacity may differ slightly from advertised capacity because of formatting, system files and software requirements."
+      },
+      {
+        "type": "heading",
+        "text": "9. NestCloud OS and Software",
+        "id": "section-9"
+      },
+      {
+        "type": "paragraph",
+        "text": "NestCloud includes software and may receive updates, bug fixes, security improvements, new features and performance improvements over time."
+      },
+      {
+        "type": "paragraph",
+        "text": "Certain services or applications included with NestCloud may be provided by third parties and may be subject to their respective terms, licences and availability."
+      },
+      {
+        "type": "heading",
+        "text": "10. Future Features",
+        "id": "section-10"
+      },
+      {
+        "type": "paragraph",
+        "text": "Features described as planned, upcoming, coming soon or part of a future NestCloud OS release are provided for informational purposes and are not guaranteed until released."
+      },
+      {
+        "type": "paragraph",
+        "text": "For example:"
+      },
+      {
+        "type": "paragraph",
+        "text": "Family Box Office is currently planned as a free upgrade with NestCloud OS v1.1 in November 2026."
+      },
+      {
+        "type": "paragraph",
+        "text": "The final functionality, compatibility and release timing may change based on development and testing."
+      },
+      {
+        "type": "heading",
+        "text": "11. Warranty",
+        "id": "section-11"
+      },
+      {
+        "type": "paragraph",
+        "text": "NestCloud appliances are provided with the warranty applicable to the purchased product and communicated at the time of sale."
+      },
+      {
+        "type": "paragraph",
+        "text": "Warranty does not generally cover damage caused by:"
+      },
+      {
+        "type": "paragraph",
+        "text": "misuse or negligence;"
+      },
+      {
+        "type": "paragraph",
+        "text": "liquid or physical damage;"
+      },
+      {
+        "type": "paragraph",
+        "text": "unauthorised modifications or repairs;"
+      },
+      {
+        "type": "paragraph",
+        "text": "unsuitable power conditions;"
+      },
+      {
+        "type": "paragraph",
+        "text": "accidents;"
+      },
+      {
+        "type": "paragraph",
+        "text": "external events; or"
+      },
+      {
+        "type": "paragraph",
+        "text": "use contrary to provided instructions."
+      },
+      {
+        "type": "paragraph",
+        "text": "Complete warranty terms may be provided separately with the product or on the NestCloud website."
+      },
+      {
+        "type": "heading",
+        "text": "12. Customer Responsibilities",
+        "id": "section-12"
+      },
+      {
+        "type": "paragraph",
+        "text": "Customers are responsible for:"
+      },
+      {
+        "type": "paragraph",
+        "text": "providing accurate contact and delivery details;"
+      },
+      {
+        "type": "paragraph",
+        "text": "using the product in accordance with provided instructions;"
+      },
+      {
+        "type": "paragraph",
+        "text": "maintaining appropriate account credentials;"
+      },
+      {
+        "type": "paragraph",
+        "text": "maintaining additional backups of especially important data where appropriate; and"
+      },
+      {
+        "type": "paragraph",
+        "text": "ensuring that content stored on their NestCloud complies with applicable law."
+      },
+      {
+        "type": "heading",
+        "text": "13. Privacy",
+        "id": "section-13"
+      },
+      {
+        "type": "paragraph",
+        "text": "Customer information may be used for purposes including:"
+      },
+      {
+        "type": "paragraph",
+        "text": "reservation management;"
+      },
+      {
+        "type": "paragraph",
+        "text": "order processing;"
+      },
+      {
+        "type": "paragraph",
+        "text": "payments;"
+      },
+      {
+        "type": "paragraph",
+        "text": "delivery;"
+      },
+      {
+        "type": "paragraph",
+        "text": "warranty;"
+      },
+      {
+        "type": "paragraph",
+        "text": "customer support;"
+      },
+      {
+        "type": "paragraph",
+        "text": "essential product communications; and"
+      },
+      {
+        "type": "paragraph",
+        "text": "legally required records."
+      },
+      {
+        "type": "paragraph",
+        "text": "We do not ask customers to provide unnecessary financial credentials or passwords."
+      },
+      {
+        "type": "heading",
+        "text": "14. Third-Party Services",
+        "id": "section-14"
+      },
+      {
+        "type": "paragraph",
+        "text": "NestCloud may integrate with or provide access to third-party software and services."
+      },
+      {
+        "type": "paragraph",
+        "text": "Third-party services remain subject to their own terms, privacy policies, licences, compatibility and continued availability."
+      },
+      {
+        "type": "heading",
+        "text": "15. Limitation of Liability",
+        "id": "section-15"
+      },
+      {
+        "type": "paragraph",
+        "text": "To the extent permitted by applicable law, NestCloud will not be responsible for indirect, incidental or consequential losses arising from misuse of the product, unsupported modifications,\nthird-party services or circumstances outside our reasonable control."
+      },
+      {
+        "type": "paragraph",
+        "text": "Nothing in these terms limits rights available to consumers under applicable Indian law."
+      },
+      {
+        "type": "heading",
+        "text": "16. Changes to These Terms",
+        "id": "section-16"
+      },
+      {
+        "type": "paragraph",
+        "text": "These Terms & Conditions may be updated from time to time."
+      },
+      {
+        "type": "paragraph",
+        "text": "The latest version published on nestcloud.in will apply to future transactions."
+      },
+      {
+        "type": "heading",
+        "text": "17. Contact",
+        "id": "section-17"
+      },
+      {
+        "type": "paragraph",
+        "text": "For questions relating to orders, payments, delivery or support, please contact us through the official contact information published on: www.nestcloud.in"
+      }
+    ]
+  },
+  {
+    "slug": "privacy-policy",
+    "path": "/policies/privacy-policy",
+    "label": "Privacy Policy",
+    "title": "Privacy Policy",
+    "updated": "Last updated: 7 August 2026",
+    "sourceUrl": "https://nestcloud.in/policies/privacy-policy",
+    "blocks": [
+      {
+        "type": "paragraph",
+        "text": "NestCloud respects your privacy. This Privacy Policy explains what information we may collect, why we collect it, and how it may be used when you visit nestcloud.in, submit a reservation,\nplace an order, make a payment, or contact NestCloud Support."
+      },
+      {
+        "type": "heading",
+        "text": "1. Information We May Collect",
+        "id": "section-1"
+      },
+      {
+        "type": "paragraph",
+        "text": "Depending on how you interact with NestCloud, we may collect information such as:"
+      },
+      {
+        "type": "list",
+        "ordered": false,
+        "items": [
+          "full name;",
+          "email address;",
+          "mobile number;",
+          "city, state and PIN code;",
+          "delivery address;",
+          "selected NestCloud model or configuration;",
+          "reservation and order details;",
+          "payment status and transaction references;",
+          "invoice information;",
+          "device serial number;",
+          "warranty and support information; and",
+          "communications you send to NestCloud."
+        ]
+      },
+      {
+        "type": "paragraph",
+        "text": "We do not intentionally collect unnecessary sensitive information."
+      },
+      {
+        "type": "heading",
+        "text": "2. Payment Information",
+        "id": "section-2"
+      },
+      {
+        "type": "paragraph",
+        "text": "Online payments may be processed through third-party payment providers such as Razorpay."
+      },
+      {
+        "type": "paragraph",
+        "text": "NestCloud does not require customers to disclose confidential payment credentials such as:"
+      },
+      {
+        "type": "list",
+        "ordered": false,
+        "items": [
+          "UPI PIN;",
+          "card PIN;",
+          "CVV;",
+          "internet banking password; or",
+          "OTP outside an authorised payment flow."
+        ]
+      },
+      {
+        "type": "paragraph",
+        "text": "Payment providers may process payment-related information according to their own terms and privacy policies."
+      },
+      {
+        "type": "heading",
+        "text": "3. How We Use Your Information",
+        "id": "section-3"
+      },
+      {
+        "type": "paragraph",
+        "text": "Customer information may be used for purposes including:"
+      },
+      {
+        "type": "list",
+        "ordered": false,
+        "items": [
+          "processing reservations;",
+          "confirming orders;",
+          "processing payments;",
+          "issuing invoices;",
+          "arranging shipping and delivery;",
+          "device registration;",
+          "providing product setup assistance;",
+          "warranty administration;",
+          "customer support;",
+          "fraud prevention;",
+          "legal and regulatory compliance;",
+          "communicating important order or product information; and",
+          "improving NestCloud products and services."
+        ]
+      },
+      {
+        "type": "heading",
+        "text": "4. Marketing Communications",
+        "id": "section-4"
+      },
+      {
+        "type": "paragraph",
+        "text": "We may send product updates, launch information or other communications where appropriate."
+      },
+      {
+        "type": "paragraph",
+        "text": "Customers may request to stop receiving non-essential promotional communications."
+      },
+      {
+        "type": "paragraph",
+        "text": "Essential communications relating to an active reservation, order, payment, delivery, warranty or support request may still be sent where necessary."
+      },
+      {
+        "type": "heading",
+        "text": "5. Sharing of Information",
+        "id": "section-5"
+      },
+      {
+        "type": "paragraph",
+        "text": "We may share limited customer information with third parties where necessary to provide our services, such as:"
+      },
+      {
+        "type": "list",
+        "ordered": false,
+        "items": [
+          "payment processors;",
+          "courier and logistics partners;",
+          "accounting or invoicing services;",
+          "customer-support providers;",
+          "technology/service providers; and",
+          "government or regulatory authorities where legally required."
+        ]
+      },
+      {
+        "type": "paragraph",
+        "text": "We do not sell customer personal information."
+      },
+      {
+        "type": "heading",
+        "text": "6. Shipping Partners",
+        "id": "section-6"
+      },
+      {
+        "type": "paragraph",
+        "text": "When an order is dispatched, necessary information such as the recipient name, mobile number and delivery address may be provided to the courier or logistics provider responsible for\ncompleting the delivery."
+      },
+      {
+        "type": "heading",
+        "text": "7. Data Stored on Your NestCloud",
+        "id": "section-7"
+      },
+      {
+        "type": "paragraph",
+        "text": "NestCloud is designed as a private home cloud appliance."
+      },
+      {
+        "type": "paragraph",
+        "text": "Photos, videos, files and other personal content stored by customers on their own NestCloud appliance are fundamentally different from information submitted to the NestCloud website for\npurchasing or support."
+      },
+      {
+        "type": "paragraph",
+        "text": "Where the product operates locally as designed, customer content remains on the customer's NestCloud appliance except where the customer intentionally enables or uses external\nservices, remote-access technologies, third-party applications or other integrations."
+      },
+      {
+        "type": "heading",
+        "text": "8. Third-Party Applications",
+        "id": "section-8"
+      },
+      {
+        "type": "paragraph",
+        "text": "NestCloud may include or support third-party software and services."
+      },
+      {
+        "type": "paragraph",
+        "text": "The handling of information by those third-party services may be governed by their own privacy policies and terms."
+      },
+      {
+        "type": "paragraph",
+        "text": "Customers should review the privacy practices of third-party applications they choose to use."
+      },
+      {
+        "type": "heading",
+        "text": "9. Data Security",
+        "id": "section-9"
+      },
+      {
+        "type": "paragraph",
+        "text": "We take reasonable measures to protect customer information under our control from unauthorised access, misuse or disclosure."
+      },
+      {
+        "type": "paragraph",
+        "text": "However, no online system or electronic transmission can be guaranteed to be completely secure."
+      },
+      {
+        "type": "paragraph",
+        "text": "Customers are also responsible for protecting their account credentials and maintaining the security of their own devices and networks."
+      },
+      {
+        "type": "heading",
+        "text": "10. Data Retention",
+        "id": "section-10"
+      },
+      {
+        "type": "paragraph",
+        "text": "We may retain information for as long as reasonably necessary to:"
+      },
+      {
+        "type": "list",
+        "ordered": false,
+        "items": [
+          "fulfil orders;",
+          "provide warranty and support;",
+          "maintain business and accounting records;",
+          "comply with tax and regulatory obligations; and",
+          "resolve disputes."
+        ]
+      },
+      {
+        "type": "paragraph",
+        "text": "Information that is no longer required may be deleted or anonymised where appropriate."
+      },
+      {
+        "type": "heading",
+        "text": "11. Customer Rights and Requests",
+        "id": "section-11"
+      },
+      {
+        "type": "paragraph",
+        "text": "Customers may contact us regarding:"
+      },
+      {
+        "type": "list",
+        "ordered": false,
+        "items": [
+          "correction of inaccurate personal information;",
+          "questions about information we hold;",
+          "withdrawal from non-essential marketing communications; or",
+          "other privacy-related concerns."
+        ]
+      },
+      {
+        "type": "paragraph",
+        "text": "Certain information may need to be retained where required for tax, accounting, warranty, legal or regulatory reasons."
+      },
+      {
+        "type": "heading",
+        "text": "12. Cookies and Website Analytics",
+        "id": "section-12"
+      },
+      {
+        "type": "paragraph",
+        "text": "nestcloud.in may use basic cookies, analytics or platform-provided technologies necessary to operate and understand website usage."
+      },
+      {
+        "type": "paragraph",
+        "text": "If additional analytics, advertising or tracking technologies are introduced in the future, this policy may be updated accordingly."
+      },
+      {
+        "type": "heading",
+        "text": "13. Children's Information",
+        "id": "section-13"
+      },
+      {
+        "type": "paragraph",
+        "text": "NestCloud products may be used by families, but purchases, reservations and customer accounts should be created by adults capable of entering into the applicable transaction."
+      },
+      {
+        "type": "paragraph",
+        "text": "We do not intentionally request children to submit payment or purchasing information directly."
+      },
+      {
+        "type": "heading",
+        "text": "14. Changes to This Policy",
+        "id": "section-14"
+      },
+      {
+        "type": "paragraph",
+        "text": "This Privacy Policy may be updated as NestCloud products, services or legal requirements evolve."
+      },
+      {
+        "type": "paragraph",
+        "text": "The latest version will be published on nestcloud.in."
+      },
+      {
+        "type": "heading",
+        "text": "15. Contact",
+        "id": "section-15"
+      },
+      {
+        "type": "paragraph",
+        "text": "For privacy-related questions or requests, contact NestCloud through the official contact details published on: www.nestcloud.in"
+      }
+    ]
+  },
+  {
+    "slug": "shipping-delivery",
+    "path": "/policies/shipping--delivery",
+    "label": "Shipping & Delivery",
+    "title": "Shipping & Delivery Policy",
+    "updated": "Last updated: 7 August 2026",
+    "sourceUrl": "https://nestcloud.in/policies/shipping--delivery",
+    "blocks": [
+      {
+        "type": "paragraph",
+        "text": "We want your NestCloud to reach you safely and with sufficient time for every appliance to be prepared and tested before dispatch."
+      },
+      {
+        "type": "heading",
+        "text": "Delivery Availability",
+        "id": "section-1"
+      },
+      {
+        "type": "paragraph",
+        "text": "NestCloud is currently delivered within India only."
+      },
+      {
+        "type": "paragraph",
+        "text": "🇮🇳 International shipping is not available at launch."
+      },
+      {
+        "type": "paragraph",
+        "text": "Delivery is subject to courier serviceability at the customer's PIN code."
+      },
+      {
+        "type": "heading",
+        "text": "Order Processing",
+        "id": "section-2"
+      },
+      {
+        "type": "paragraph",
+        "text": "Before dispatch, every confirmed NestCloud order may go through preparation, software installation, configuration and quality checks."
+      },
+      {
+        "type": "paragraph",
+        "text": "The customer will be informed when the order is ready for dispatch."
+      },
+      {
+        "type": "heading",
+        "text": "Preorders",
+        "id": "section-3"
+      },
+      {
+        "type": "paragraph",
+        "text": "Products purchased during a preorder period may not be available for immediate dispatch."
+      },
+      {
+        "type": "paragraph",
+        "text": "The expected delivery window will be communicated during the preorder process."
+      },
+      {
+        "type": "paragraph",
+        "text": "Preorder delivery dates are estimates and may change because of:"
+      },
+      {
+        "type": "list",
+        "ordered": false,
+        "items": [
+          "hardware/component availability;",
+          "assembly schedules;",
+          "product testing;",
+          "courier availability;",
+          "weather or transport disruptions; or",
+          "other circumstances outside our reasonable control."
+        ]
+      },
+      {
+        "type": "paragraph",
+        "text": "We will make reasonable efforts to communicate significant delays."
+      },
+      {
+        "type": "heading",
+        "text": "Shipping Charges",
+        "id": "section-4"
+      },
+      {
+        "type": "paragraph",
+        "text": "Applicable shipping charges, if any, will be shown or communicated before the customer completes the final payment."
+      },
+      {
+        "type": "paragraph",
+        "text": "Where shipping is offered free of charge, this will be clearly stated during checkout or order confirmation."
+      },
+      {
+        "type": "heading",
+        "text": "Delivery Address",
+        "id": "section-5"
+      },
+      {
+        "type": "paragraph",
+        "text": "Customers must provide a complete and accurate delivery address, including:"
+      },
+      {
+        "type": "list",
+        "ordered": false,
+        "items": [
+          "recipient name;",
+          "mobile number;",
+          "house/flat details;",
+          "street/locality;",
+          "city;",
+          "state; and",
+          "PIN code."
+        ]
+      },
+      {
+        "type": "paragraph",
+        "text": "NestCloud is not responsible for delays resulting from incomplete or incorrect address information supplied by the customer."
+      },
+      {
+        "type": "heading",
+        "text": "Dispatch Confirmation",
+        "id": "section-6"
+      },
+      {
+        "type": "paragraph",
+        "text": "Once the product has been dispatched, customers may receive:"
+      },
+      {
+        "type": "list",
+        "ordered": false,
+        "items": [
+          "courier information;",
+          "tracking details; and",
+          "an estimated delivery date."
+        ]
+      },
+      {
+        "type": "paragraph",
+        "text": "Tracking availability depends on the courier partner."
+      },
+      {
+        "type": "heading",
+        "text": "Delivery Time",
+        "id": "section-7"
+      },
+      {
+        "type": "paragraph",
+        "text": "Delivery time after dispatch will vary depending on the destination and courier serviceability."
+      },
+      {
+        "type": "paragraph",
+        "text": "Remote locations may require additional delivery time."
+      },
+      {
+        "type": "heading",
+        "text": "Damaged Package",
+        "id": "section-8"
+      },
+      {
+        "type": "paragraph",
+        "text": "If the external package appears significantly damaged at the time of delivery, please:"
+      },
+      {
+        "type": "list",
+        "ordered": false,
+        "items": [
+          "take photographs or a short video of the package before opening it;",
+          "retain the original packaging; and",
+          "contact NestCloud as soon as possible."
+        ]
+      },
+      {
+        "type": "paragraph",
+        "text": "This helps us investigate the issue with the logistics provider."
+      },
+      {
+        "type": "heading",
+        "text": "Incorrect or Missing Product",
+        "id": "section-9"
+      },
+      {
+        "type": "paragraph",
+        "text": "If you receive an incorrect product or believe an item is missing from the shipment, please contact NestCloud promptly with your order details."
+      },
+      {
+        "type": "heading",
+        "text": "Failed Delivery Attempts",
+        "id": "section-10"
+      },
+      {
+        "type": "paragraph",
+        "text": "Courier partners may make more than one delivery attempt depending on their policies."
+      },
+      {
+        "type": "paragraph",
+        "text": "If an order is returned because:"
+      },
+      {
+        "type": "list",
+        "ordered": false,
+        "items": [
+          "the customer was unavailable;",
+          "the address was incorrect;",
+          "delivery was refused; or",
+          "the courier could not contact the customer,"
+        ]
+      },
+      {
+        "type": "paragraph",
+        "text": "additional shipping charges may apply for redispatch."
+      },
+      {
+        "type": "heading",
+        "text": "Installation / Setup",
+        "id": "section-11"
+      },
+      {
+        "type": "paragraph",
+        "text": "Where setup assistance is provided, the details will be communicated separately."
+      },
+      {
+        "type": "paragraph",
+        "text": "Delivery of the physical appliance and any optional setup assistance may occur separately."
+      },
+      {
+        "type": "heading",
+        "text": "India-Only Launch",
+        "id": "section-12"
+      },
+      {
+        "type": "paragraph",
+        "text": "NestCloud currently does not process international orders or shipments."
+      },
+      {
+        "type": "paragraph",
+        "text": "Customers outside India may register their interest, but purchase and delivery will become available only if NestCloud officially launches in their region in the future."
+      }
+    ]
+  },
+  {
+    "slug": "cancellation-refund",
+    "path": "/policies/cancellation--refund",
+    "label": "Cancellation & Refund",
+    "title": "Cancellation & Refund Policy",
+    "updated": "Last updated: 7 August 2026",
+    "sourceUrl": "https://nestcloud.in/policies/cancellation--refund",
+    "blocks": [
+      {
+        "type": "paragraph",
+        "text": "We want NestCloud purchases to remain straightforward and transparent."
+      },
+      {
+        "type": "heading",
+        "text": "Free Reservations",
+        "id": "section-1"
+      },
+      {
+        "type": "paragraph",
+        "text": "Submitting a NestCloud reservation is completely free."
+      },
+      {
+        "type": "paragraph",
+        "text": "No payment is required to reserve your interest."
+      },
+      {
+        "type": "paragraph",
+        "text": "A reservation may be cancelled at any time before an order and payment are confirmed."
+      },
+      {
+        "type": "heading",
+        "text": "Preorder Advance",
+        "id": "section-2"
+      },
+      {
+        "type": "paragraph",
+        "text": "To confirm a NestCloud preorder, customers are required to pay a ₹10,000 preorder advance through an official NestCloud payment link."
+      },
+      {
+        "type": "paragraph",
+        "text": "Once the preorder advance is successfully received and the order is confirmed, NestCloud may begin procurement, allocation, assembly, configuration and testing specifically for that\ncustomer's device."
+      },
+      {
+        "type": "paragraph",
+        "text": "For this reason, the ₹10,000 preorder advance is non-refundable if the customer voluntarily cancels the preorder after confirmation."
+      },
+      {
+        "type": "paragraph",
+        "text": "The preorder advance will be fully adjusted against the final purchase price of the selected NestCloud Edition."
+      },
+      {
+        "type": "paragraph",
+        "text": "The remaining balance will be requested once the device is ready for dispatch and must be paid before shipment."
+      },
+      {
+        "type": "paragraph",
+        "text": "NestCloud currently aims to have preorder devices ready for dispatch within 10 working days from receipt of the preorder advance, unless a different timeline is communicated."
+      },
+      {
+        "type": "paragraph",
+        "text": "If NestCloud is unable to fulfil or cancels the confirmed preorder, the amount received will be refunded, subject to applicable law."
+      },
+      {
+        "type": "heading",
+        "text": "Balance Payment & Dispatch",
+        "id": "section-3"
+      },
+      {
+        "type": "paragraph",
+        "text": "Once the customer's NestCloud device is ready for dispatch, NestCloud will communicate the remaining balance payable."
+      },
+      {
+        "type": "paragraph",
+        "text": "The remaining balance must be paid through an official NestCloud payment method or payment link before the device is dispatched."
+      },
+      {
+        "type": "paragraph",
+        "text": "If the remaining balance is not paid within the period communicated by NestCloud, dispatch may be delayed and NestCloud may contact the customer to confirm whether they wish to\nproceed with the order."
+      },
+      {
+        "type": "paragraph",
+        "text": "Any cancellation after a confirmed preorder remains subject to the applicable preorder cancellation terms."
+      },
+      {
+        "type": "heading",
+        "text": "Cancellation Before Dispatch",
+        "id": "section-4"
+      },
+      {
+        "type": "paragraph",
+        "text": "For standard fully-paid orders that are not preorders, customers may request cancellation before the product has been dispatched."
+      },
+      {
+        "type": "paragraph",
+        "text": "If the cancellation is accepted, eligible amounts already paid will be refunded to the original payment method."
+      },
+      {
+        "type": "paragraph",
+        "text": "For confirmed preorders, the ₹10,000 preorder advance remains non-refundable if the customer voluntarily cancels after preorder confirmation, as described under the Preorder Advance\nsection."
+      },
+      {
+        "type": "paragraph",
+        "text": "Any remaining amount paid beyond the applicable non-refundable preorder advance will be handled according to the circumstances of the cancellation and applicable law."
+      },
+      {
+        "type": "heading",
+        "text": "Cancellation After Dispatch",
+        "id": "section-5"
+      },
+      {
+        "type": "paragraph",
+        "text": "Once a NestCloud appliance has been dispatched, cancellation may no longer be possible."
+      },
+      {
+        "type": "paragraph",
+        "text": "If the customer no longer wishes to receive the product after dispatch, the request will be handled according to the applicable return eligibility and circumstances."
+      },
+      {
+        "type": "heading",
+        "text": "Cancellation by NestCloud",
+        "id": "section-6"
+      },
+      {
+        "type": "paragraph",
+        "text": "NestCloud may cancel an order where necessary because of:"
+      },
+      {
+        "type": "list",
+        "ordered": false,
+        "items": [
+          "product unavailability;",
+          "incorrect pricing;",
+          "inability to fulfil the selected configuration;",
+          "unsupported delivery location;",
+          "payment verification issues;",
+          "suspected fraudulent activity; or",
+          "other exceptional operational circumstances."
+        ]
+      },
+      {
+        "type": "paragraph",
+        "text": "If NestCloud cancels a confirmed order or preorder for reasons attributable to NestCloud, any amount received toward that order will be refunded to the original payment method."
+      },
+      {
+        "type": "heading",
+        "text": "Damaged or Incorrect Product",
+        "id": "section-7"
+      },
+      {
+        "type": "paragraph",
+        "text": "If you receive:"
+      },
+      {
+        "type": "list",
+        "ordered": false,
+        "items": [
+          "a physically damaged appliance;",
+          "an incorrect NestCloud model; or",
+          "a product materially different from the confirmed order,"
+        ]
+      },
+      {
+        "type": "paragraph",
+        "text": "please contact NestCloud as soon as reasonably possible after delivery through the official support details published on nestcloud.in."
+      },
+      {
+        "type": "paragraph",
+        "text": "We may request:"
+      },
+      {
+        "type": "list",
+        "ordered": false,
+        "items": [
+          "photographs;",
+          "videos;",
+          "packaging images;",
+          "serial-number information; and/or",
+          "other reasonable information needed to verify the issue."
+        ]
+      },
+      {
+        "type": "paragraph",
+        "text": "Depending on the circumstances, we may arrange replacement, repair or another appropriate resolution."
+      },
+      {
+        "type": "heading",
+        "text": "Change of Mind",
+        "id": "section-8"
+      },
+      {
+        "type": "paragraph",
+        "text": "Because NestCloud is a physical electronic appliance that may be procured, prepared, configured and allocated specifically for an order, returns solely due to change of mind after delivery\nare not automatically accepted. For confirmed preorders cancelled before dispatch, the preorder advance terms stated above will apply. Any request made after delivery will be reviewed\nindividually and remains subject to applicable consumer rights under Indian law."
+      },
+      {
+        "type": "heading",
+        "text": "Software Issues",
+        "id": "section-9"
+      },
+      {
+        "type": "paragraph",
+        "text": "Software-related issues ordinarily do not require returning the appliance."
+      },
+      {
+        "type": "paragraph",
+        "text": "Please contact NestCloud Support first so that troubleshooting, repair or software remediation can be attempted."
+      },
+      {
+        "type": "heading",
+        "text": "Refund Method",
+        "id": "section-10"
+      },
+      {
+        "type": "paragraph",
+        "text": "Approved refunds will normally be initiated to the original payment method used for the transaction."
+      },
+      {
+        "type": "paragraph",
+        "text": "Once initiated, the time required for the refund to appear in the customer's account depends on the payment method, payment provider and customer's bank."
+      },
+      {
+        "type": "paragraph",
+        "text": "For payments processed through Razorpay, normal refunds may typically take several working days to reflect after initiation."
+      },
+      {
+        "type": "heading",
+        "text": "Refund Processing",
+        "id": "section-11"
+      },
+      {
+        "type": "paragraph",
+        "text": "Once a refund has been approved and initiated, we will provide confirmation where available."
+      },
+      {
+        "type": "paragraph",
+        "text": "Banks and payment providers may require additional business days for the refund to appear in the customer's account."
+      },
+      {
+        "type": "heading",
+        "text": "Warranty Claims",
+        "id": "section-12"
+      },
+      {
+        "type": "paragraph",
+        "text": "A warranty claim is different from a cancellation or return."
+      },
+      {
+        "type": "paragraph",
+        "text": "Products that develop an eligible defect after delivery will be handled according to the applicable NestCloud Warranty Policy."
+      },
+      {
+        "type": "heading",
+        "text": "Contact Us",
+        "id": "section-13"
+      },
+      {
+        "type": "paragraph",
+        "text": "For cancellation or refund requests, contact us using the official support details listed on: www.nestcloud.in"
+      },
+      {
+        "type": "paragraph",
+        "text": "Please include your:"
+      },
+      {
+        "type": "list",
+        "ordered": false,
+        "items": [
+          "full name;",
+          "order number;",
+          "registered mobile number/email; and"
+        ]
+      },
+      {
+        "type": "paragraph",
+        "text": "   • reason for the request."
+      }
+    ]
+  },
+  {
+    "slug": "warranty",
+    "path": "/policies/warranty",
+    "label": "Warranty",
+    "title": "NestCloud Warranty Policy",
+    "updated": "Last updated: 7 August 2026",
+    "sourceUrl": "https://nestcloud.in/policies/warranty",
+    "blocks": [
+      {
+        "type": "paragraph",
+        "text": "NestCloud appliances are designed to provide reliable operation as a home appliance. This policy explains the standard warranty applicable to NestCloud hardware purchased directly\nthrough authorised NestCloud sales channels."
+      },
+      {
+        "type": "heading",
+        "text": "1. Standard Warranty",
+        "id": "section-1"
+      },
+      {
+        "type": "paragraph",
+        "text": "NestCloud includes a:"
+      },
+      {
+        "type": "paragraph",
+        "text": "1-Year Limited Hardware Warranty"
+      },
+      {
+        "type": "paragraph",
+        "text": "The warranty period begins from the date of delivery, unless a different commencement date is specifically stated on the customer's invoice or order documentation."
+      },
+      {
+        "type": "heading",
+        "text": "2. What the Warranty Covers",
+        "id": "section-2"
+      },
+      {
+        "type": "paragraph",
+        "text": "During the warranty period, NestCloud may provide repair or replacement, as appropriate, for hardware defects arising from normal intended use."
+      },
+      {
+        "type": "paragraph",
+        "text": "Covered issues may include failures relating to components supplied as part of the original NestCloud appliance, subject to inspection and verification."
+      },
+      {
+        "type": "heading",
+        "text": "3. The Appliance Is Covered as a Complete Product",
+        "id": "section-3"
+      },
+      {
+        "type": "paragraph",
+        "text": "The warranty applies to the NestCloud appliance as supplied to the customer."
+      },
+      {
+        "type": "paragraph",
+        "text": "Individual internal component manufacturer warranty periods are not presented as separate customer-facing NestCloud warranty commitments."
+      },
+      {
+        "type": "paragraph",
+        "text": "Warranty service will be coordinated through NestCloud."
+      },
+      {
+        "type": "heading",
+        "text": "4. What Is Not Covered",
+        "id": "section-4"
+      },
+      {
+        "type": "paragraph",
+        "text": "The limited warranty does not cover damage or failure resulting from circumstances including:"
+      },
+      {
+        "type": "list",
+        "ordered": false,
+        "items": [
+          "accidental or physical damage;",
+          "liquid or moisture damage;",
+          "misuse or negligence;",
+          "improper storage or operation;",
+          "unauthorised opening, modification or repair;",
+          "use of unsupported components;",
+          "electrical surges or unsuitable power conditions;",
+          "fire, flooding or other external events;",
+          "cosmetic wear that does not affect functionality;",
+          "loss caused by malware or unsupported software modifications;",
+          "damage during transportation performed independently by the customer; or",
+          "use inconsistent with product instructions."
+        ]
+      },
+      {
+        "type": "heading",
+        "text": "5. Storage and Customer Data",
+        "id": "section-5"
+      },
+      {
+        "type": "paragraph",
+        "text": "Warranty service relates to the NestCloud appliance and hardware."
+      },
+      {
+        "type": "paragraph",
+        "text": "Customers are responsible for maintaining appropriate backups of especially important personal data."
+      },
+      {
+        "type": "paragraph",
+        "text": "Depending on the nature of a repair or replacement, stored information may become unavailable or may need to be restored from another backup."
+      },
+      {
+        "type": "paragraph",
+        "text": "Where practical, NestCloud will attempt to avoid unnecessary impact on customer data, but preservation of all data cannot be guaranteed during hardware servicing."
+      },
+      {
+        "type": "heading",
+        "text": "6. Software Support",
+        "id": "section-6"
+      },
+      {
+        "type": "paragraph",
+        "text": "Software problems, configuration issues and supported NestCloud OS issues may be handled through troubleshooting, updates or remote guidance where available."
+      },
+      {
+        "type": "paragraph",
+        "text": "Software troubleshooting does not automatically constitute a hardware warranty claim."
+      },
+      {
+        "type": "heading",
+        "text": "7. Warranty Claim Process",
+        "id": "section-7"
+      },
+      {
+        "type": "paragraph",
+        "text": "To request warranty support, customers should contact NestCloud using the official support details published on nestcloud.in."
+      },
+      {
+        "type": "paragraph",
+        "text": "Please provide:"
+      },
+      {
+        "type": "list",
+        "ordered": false,
+        "items": [
+          "customer name;",
+          "order or invoice number;",
+          "NestCloud serial number;",
+          "description of the issue; and",
+          "photographs, video or diagnostic information where requested."
+        ]
+      },
+      {
+        "type": "paragraph",
+        "text": "NestCloud may perform troubleshooting before approving hardware service."
+      },
+      {
+        "type": "heading",
+        "text": "8. Inspection",
+        "id": "section-8"
+      },
+      {
+        "type": "paragraph",
+        "text": "A warranty claim may require inspection or diagnosis to determine whether the reported issue is covered."
+      },
+      {
+        "type": "paragraph",
+        "text": "If the issue is found to result from circumstances excluded under this warranty, repair or replacement may be offered on a chargeable basis where available."
+      },
+      {
+        "type": "heading",
+        "text": "9. Repair or Replacement",
+        "id": "section-9"
+      },
+      {
+        "type": "paragraph",
+        "text": "For an approved warranty claim, NestCloud may, at its discretion:"
+      },
+      {
+        "type": "list",
+        "ordered": false,
+        "items": [
+          "repair the affected appliance;",
+          "replace an affected component;",
+          "replace the appliance with an equivalent unit; or",
+          "provide another appropriate remedy."
+        ]
+      },
+      {
+        "type": "paragraph",
+        "text": "Replacement products or components may be new or functionally equivalent, subject to availability and applicable law."
+      },
+      {
+        "type": "heading",
+        "text": "10. Shipping for Warranty Service",
+        "id": "section-10"
+      },
+      {
+        "type": "paragraph",
+        "text": "Instructions for sending or returning a device for warranty service will be provided by NestCloud."
+      },
+      {
+        "type": "paragraph",
+        "text": "Customers should not ship the appliance to any address without first receiving service instructions."
+      },
+      {
+        "type": "paragraph",
+        "text": "Shipping responsibility or charges may vary depending on the nature of the claim and location."
+      },
+      {
+        "type": "heading",
+        "text": "11. Warranty After Repair or Replacement",
+        "id": "section-11"
+      },
+      {
+        "type": "paragraph",
+        "text": "A repaired or replacement appliance will continue to be covered for the remaining period of the original warranty or such other period as required under applicable law."
+      },
+      {
+        "type": "heading",
+        "text": "12. Proof of Purchase",
+        "id": "section-12"
+      },
+      {
+        "type": "paragraph",
+        "text": "Proof of purchase may be required for warranty service."
+      },
+      {
+        "type": "paragraph",
+        "text": "Acceptable proof may include:"
+      },
+      {
+        "type": "list",
+        "ordered": false,
+        "items": [
+          "NestCloud invoice;",
+          "order confirmation; or",
+          "another authorised sales record."
+        ]
+      },
+      {
+        "type": "heading",
+        "text": "13. Transferability",
+        "id": "section-13"
+      },
+      {
+        "type": "paragraph",
+        "text": "Unless otherwise stated, the standard warranty is associated with the originally purchased NestCloud appliance and proof of purchase."
+      },
+      {
+        "type": "heading",
+        "text": "14. Consumer Rights",
+        "id": "section-14"
+      },
+      {
+        "type": "paragraph",
+        "text": "This warranty is provided in addition to rights that may be available to consumers under applicable Indian law."
+      },
+      {
+        "type": "paragraph",
+        "text": "Nothing in this policy is intended to unlawfully restrict those rights."
+      },
+      {
+        "type": "heading",
+        "text": "15. Contact",
+        "id": "section-15"
+      },
+      {
+        "type": "paragraph",
+        "text": "For warranty assistance, use the official NestCloud support details published on: www.nestcloud.in"
+      }
+    ]
+  },
+  {
+    "slug": "service-level-agreement",
+    "path": "/policies/sla",
+    "label": "Service Level Agreement",
+    "title": "Service Level Agreement",
+    "updated": "Last updated: 17 Sep 2026",
+    "sourceUrl": "https://nestcloud.in/policies/sla",
+    "blocks": [
+      {
+        "type": "paragraph",
+        "text": "This Service Level Agreement (“SLA”) explains the service and support commitments provided for NestCloud products by Shreenvitha Enterprises, operating under the NestCloud brand."
+      },
+      {
+        "type": "paragraph",
+        "text": "This SLA should be read together with the NestCloud Terms & Conditions, Shipping & Delivery Policy, Cancellation & Refund Policy, Warranty Policy and Privacy Policy published on\nnestcloud.in."
+      },
+      {
+        "type": "heading",
+        "text": "1. About NestCloud",
+        "id": "section-1"
+      },
+      {
+        "type": "paragraph",
+        "text": "NestCloud is a private home cloud appliance designed to help families store, manage and access their photos, videos, files and supported media from their own home."
+      },
+      {
+        "type": "paragraph",
+        "text": "Unlike a conventional public cloud storage service, NestCloud primarily operates using the customer's own NestCloud appliance, storage, home network and internet connection."
+      },
+      {
+        "type": "paragraph",
+        "text": "This SLA covers our service commitments relating to:"
+      },
+      {
+        "type": "list",
+        "ordered": false,
+        "items": [
+          "order preparation and dispatch;",
+          "initial setup assistance;",
+          "NestCloud OS and supported software assistance;",
+          "hardware troubleshooting and warranty support;",
+          "customer support; and",
+          "software updates and improvements made available for supported NestCloud devices."
+        ]
+      },
+      {
+        "type": "paragraph",
+        "text": "NestCloud is currently available for purchase and delivery within India only."
+      },
+      {
+        "type": "heading",
+        "text": "2. Order Preparation & Dispatch",
+        "id": "section-2"
+      },
+      {
+        "type": "paragraph",
+        "text": "Confirmed NestCloud orders may undergo procurement, allocation, preparation, software installation, configuration, testing and quality checks before dispatch."
+      },
+      {
+        "type": "paragraph",
+        "text": "For confirmed preorders, NestCloud currently aims to have the device ready for dispatch within 10 working days from receipt of the applicable preorder advance, unless a different\ntimeline is communicated to the customer."
+      },
+      {
+        "type": "paragraph",
+        "text": "This is an estimated fulfilment timeline rather than a guaranteed delivery date."
+      },
+      {
+        "type": "paragraph",
+        "text": "The timeline may change because of component availability, procurement, assembly, testing, logistics or circumstances outside our reasonable control."
+      },
+      {
+        "type": "paragraph",
+        "text": "If there is a material delay, NestCloud will make reasonable efforts to communicate the revised expected timeline to the customer."
+      },
+      {
+        "type": "paragraph",
+        "text": "Delivery time after dispatch depends on the destination, courier serviceability and logistics provider and is governed by the NestCloud Shipping & Delivery Policy."
+      },
+      {
+        "type": "heading",
+        "text": "3. Setup & Activation Assistance",
+        "id": "section-3"
+      },
+      {
+        "type": "paragraph",
+        "text": "NestCloud is designed to provide a straightforward home setup experience."
+      },
+      {
+        "type": "paragraph",
+        "text": "Where setup assistance is provided, customers experiencing difficulty with initial setup or supported configuration may contact NestCloud through the official support channels published\non nestcloud.in."
+      },
+      {
+        "type": "paragraph",
+        "text": "NestCloud will provide reasonable remote troubleshooting and guidance for supported product-related issues."
+      },
+      {
+        "type": "paragraph",
+        "text": "Issues involving a customer's internet connection, router, Wi-Fi/LAN network or other third-party equipment may require assistance from the relevant internet service provider or equipment\nmanufacturer."
+      },
+      {
+        "type": "heading",
+        "text": "4. Customer Support",
+        "id": "section-4"
+      },
+      {
+        "type": "paragraph",
+        "text": "Customers may contact NestCloud using the official support details published on nestcloud.in."
+      },
+      {
+        "type": "paragraph",
+        "text": "For support requests received during normal business operations, NestCloud aims to provide an initial response within 1–2 business days."
+      },
+      {
+        "type": "paragraph",
+        "text": "Issues that significantly affect access to core NestCloud functionality will be prioritised where reasonably possible."
+      },
+      {
+        "type": "paragraph",
+        "text": "The initial response time is a service target and does not constitute a guaranteed resolution time."
+      },
+      {
+        "type": "paragraph",
+        "text": "Resolution time will depend on factors including the nature and complexity of the issue, diagnosis required, availability of hardware or replacement components, logistics and third-party\ndependencies."
+      },
+      {
+        "type": "heading",
+        "text": "5. Hardware & Warranty Support",
+        "id": "section-5"
+      },
+      {
+        "type": "paragraph",
+        "text": "NestCloud appliances purchased through authorised NestCloud sales channels include a 1-Year Limited Hardware Warranty, subject to the complete NestCloud Warranty Policy."
+      },
+      {
+        "type": "paragraph",
+        "text": "The warranty period begins from the date of delivery unless a different commencement date is specifically stated on the customer's invoice or order documentation."
+      },
+      {
+        "type": "paragraph",
+        "text": "Customers experiencing a suspected hardware problem should contact NestCloud Support before sending or returning the appliance."
+      },
+      {
+        "type": "paragraph",
+        "text": "NestCloud may perform remote troubleshooting or request diagnostic information, photographs, videos, serial-number information or other reasonable information before determining the\nappropriate service action."
+      },
+      {
+        "type": "paragraph",
+        "text": "For an approved warranty claim, NestCloud may, as appropriate:"
+      },
+      {
+        "type": "list",
+        "ordered": false,
+        "items": [
+          "repair the appliance;",
+          "replace an affected component;",
+          "replace the appliance with an equivalent unit; or",
+          "provide another appropriate remedy."
+        ]
+      },
+      {
+        "type": "paragraph",
+        "text": "Complete warranty coverage, exclusions and claim procedures are governed by the NestCloud Warranty Policy."
+      },
+      {
+        "type": "heading",
+        "text": "6. NestCloud OS & Software Support",
+        "id": "section-6"
+      },
+      {
+        "type": "paragraph",
+        "text": "NestCloud may provide software updates, bug fixes, security improvements, compatibility updates, performance improvements and new features for supported NestCloud devices."
+      },
+      {
+        "type": "paragraph",
+        "text": "Software-related issues may normally be handled through troubleshooting, configuration changes, updates or remote guidance where available."
+      },
+      {
+        "type": "paragraph",
+        "text": "Product features, supported applications and software capabilities may evolve through NestCloud OS updates."
+      },
+      {
+        "type": "paragraph",
+        "text": "Features described as planned, upcoming, coming soon or part of a future NestCloud OS release are not service commitments under this SLA until they are officially released."
+      },
+      {
+        "type": "heading",
+        "text": "7. Open-Source & Third-Party Software",
+        "id": "section-7"
+      },
+      {
+        "type": "paragraph",
+        "text": "NestCloud may include, integrate with or provide access to open-source and third-party software and services."
+      },
+      {
+        "type": "paragraph",
+        "text": "Such software and services may be subject to their respective terms, licences, compatibility requirements and continued availability."
+      },
+      {
+        "type": "paragraph",
+        "text": "Changes made by third-party developers or service providers may occasionally affect functionality or compatibility."
+      },
+      {
+        "type": "paragraph",
+        "text": "Where reasonably practical, NestCloud will provide troubleshooting, updates or guidance for supported integrations, but cannot guarantee the continued availability or unchanged\nfunctionality of third-party software or services outside our control."
+      },
+      {
+        "type": "heading",
+        "text": "8. Service Availability",
+        "id": "section-8"
+      },
+      {
+        "type": "paragraph",
+        "text": "NestCloud primarily operates from the customer's own appliance and home network. Accordingly, NestCloud does not provide a percentage-based uptime guarantee."
+      },
+      {
+        "type": "paragraph",
+        "text": "Availability of the appliance or particular features may depend on factors including:"
+      },
+      {
+        "type": "list",
+        "ordered": false,
+        "items": [
+          "electricity supply;",
+          "home network and Wi-Fi/LAN availability;",
+          "internet connectivity where required;",
+          "router and network configuration;",
+          "storage and hardware condition;",
+          "software configuration;",
+          "supported third-party or open-source components; and",
+          "other circumstances outside NestCloud's reasonable control."
+        ]
+      },
+      {
+        "type": "paragraph",
+        "text": "Where an availability issue relates to supported NestCloud functionality, we will make reasonable efforts to assist with diagnosis and troubleshooting."
+      },
+      {
+        "type": "heading",
+        "text": "9. Customer Data & Backups",
+        "id": "section-9"
+      },
+      {
+        "type": "paragraph",
+        "text": "NestCloud is designed around keeping the customer's personal content on storage under the customer's control."
+      },
+      {
+        "type": "paragraph",
+        "text": "Customers are responsible for maintaining appropriate additional backups of especially important or irreplaceable data."
+      },
+      {
+        "type": "paragraph",
+        "text": "Where a NestCloud model or feature provides additional backup functionality, that functionality is intended to reduce the risk of data loss. It does not constitute an absolute guarantee\nagainst data loss."
+      },
+      {
+        "type": "paragraph",
+        "text": "Data may become unavailable or be lost because of circumstances including hardware failure, storage corruption, accidental deletion, physical damage, unsupported modifications or other\nevents."
+      },
+      {
+        "type": "paragraph",
+        "text": "Where practical, NestCloud will attempt to avoid unnecessary impact on customer data during troubleshooting or warranty servicing. However, preservation or recovery of all customer data\ncannot be guaranteed."
+      },
+      {
+        "type": "heading",
+        "text": "10. Service Exclusions",
+        "id": "section-10"
+      },
+      {
+        "type": "paragraph",
+        "text": "The service targets described in this SLA may not apply where an issue primarily results from circumstances outside NestCloud's reasonable control, including:"
+      },
+      {
+        "type": "list",
+        "ordered": false,
+        "items": [
+          "power or internet outages;",
+          "customer router, network or Wi-Fi problems;",
+          "physical, accidental or liquid damage;",
+          "misuse or negligence;",
+          "unsuitable power conditions;",
+          "unauthorised hardware modifications or repairs;",
+          "unsupported components or software modifications;",
+          "third-party service or software failures; or",
+          "other external events outside our reasonable control."
+        ]
+      },
+      {
+        "type": "paragraph",
+        "text": "Where practical, NestCloud may still assist customers in identifying the likely cause of an issue."
+      },
+      {
+        "type": "heading",
+        "text": "11. Cancellations, Returns & Refunds",
+        "id": "section-11"
+      },
+      {
+        "type": "paragraph",
+        "text": "Cancellations, returns and refunds are governed by the current NestCloud Cancellation & Refund Policy."
+      },
+      {
+        "type": "paragraph",
+        "text": "For confirmed preorders, the applicable preorder advance and cancellation conditions stated in that policy and the NestCloud Terms & Conditions will apply."
+      },
+      {
+        "type": "paragraph",
+        "text": "Approved refunds will normally be initiated to the original payment method."
+      },
+      {
+        "type": "paragraph",
+        "text": "The time required for a refund to appear after initiation depends on the payment method, payment service provider and customer's bank."
+      },
+      {
+        "type": "paragraph",
+        "text": "This SLA does not modify or replace the Cancellation & Refund Policy."
+      },
+      {
+        "type": "heading",
+        "text": "12. Shipping & Delivery",
+        "id": "section-12"
+      },
+      {
+        "type": "paragraph",
+        "text": "Shipping and delivery are governed by the NestCloud Shipping & Delivery Policy."
+      },
+      {
+        "type": "paragraph",
+        "text": "Once an appliance has been dispatched, delivery timelines depend on the destination, courier serviceability, logistics provider and circumstances outside NestCloud's reasonable control."
+      },
+      {
+        "type": "paragraph",
+        "text": "Customers should report significantly damaged packages, incorrect products or missing items as soon as reasonably possible using the official NestCloud support channels."
+      },
+      {
+        "type": "heading",
+        "text": "13. Customer Responsibilities",
+        "id": "section-13"
+      },
+      {
+        "type": "paragraph",
+        "text": "To enable NestCloud to provide effective support, customers are responsible for:"
+      },
+      {
+        "type": "list",
+        "ordered": false,
+        "items": [
+          "providing accurate order and contact information;",
+          "using the appliance according to provided instructions;",
+          "maintaining appropriate account credentials;",
+          "maintaining appropriate additional backups of especially important data;",
+          "providing reasonable diagnostic information when requested;",
+          "maintaining suitable power and network conditions; and",
+          "avoiding unsupported modifications that may interfere with the operation of the appliance."
+        ]
+      },
+      {
+        "type": "heading",
+        "text": "14. Nature of Service Commitments",
+        "id": "section-14"
+      },
+      {
+        "type": "paragraph",
+        "text": "The response times and service commitments described in this SLA represent the service levels NestCloud aims to provide under normal operating circumstances."
+      },
+      {
+        "type": "paragraph",
+        "text": "Unless expressly stated otherwise, they should not be interpreted as guarantees that every technical, software or hardware issue will be resolved within a specific period."
+      },
+      {
+        "type": "paragraph",
+        "text": "NestCloud will make reasonable efforts to diagnose and resolve supported issues as efficiently as practical."
+      },
+      {
+        "type": "paragraph",
+        "text": "Nothing in this SLA limits rights available to consumers under applicable Indian law."
+      },
+      {
+        "type": "heading",
+        "text": "15. Changes to This SLA",
+        "id": "section-15"
+      },
+      {
+        "type": "paragraph",
+        "text": "This SLA may be updated from time to time as NestCloud products, software and support services evolve."
+      },
+      {
+        "type": "paragraph",
+        "text": "The latest version will be published on nestcloud.in."
+      },
+      {
+        "type": "paragraph",
+        "text": "Updates to this SLA will apply prospectively and will not unlawfully restrict rights available to customers under applicable Indian law."
+      },
+      {
+        "type": "heading",
+        "text": "16. Contact",
+        "id": "section-16"
+      },
+      {
+        "type": "paragraph",
+        "text": "For questions relating to NestCloud orders, delivery, setup, warranty or technical support, please contact us using the official contact information published on:"
+      },
+      {
+        "type": "paragraph",
+        "text": "www.nestcloud.in",
+        "links": [
+          {
+            "href": "http://www.nestcloud.in/",
+            "text": "www.nestcloud.in"
+          }
+        ]
+      },
+      {
+        "type": "paragraph",
+        "text": "Legal Entity / Service Provider: Shreenvitha Enterprises"
+      },
+      {
+        "type": "paragraph",
+        "text": "Developed under: BharatVyb AI Solutions"
+      },
+      {
+        "type": "paragraph",
+        "text": "Product Brand: NestCloud"
+      },
+      {
+        "type": "paragraph",
+        "text": "Country of Operation: India"
+      }
+    ]
+  }
+]

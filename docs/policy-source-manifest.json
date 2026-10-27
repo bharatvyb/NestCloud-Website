@@ -1,0 +1,56 @@
+[
+  {
+    "path": "/policies/tc",
+    "sourceUrl": "https://nestcloud.in/policies/tc",
+    "sourceUpdated": "Last updated: 7 August 2026",
+    "retrieved": "2026-10-27",
+    "normalizedBodySHA256": "80079134dfb3c1e41631bd1721f5d600ede50be832899ddcadd7a9aa215fcaf0",
+    "characters": 7940,
+    "sections": 17
+  },
+  {
+    "path": "/policies/privacy-policy",
+    "sourceUrl": "https://nestcloud.in/policies/privacy-policy",
+    "sourceUpdated": "Last updated: 7 August 2026",
+    "retrieved": "2026-10-27",
+    "normalizedBodySHA256": "241525e26a169b55e83ea18d4afeecba77bb67325b9db4312adf0c6b87fcc1f6",
+    "characters": 5424,
+    "sections": 15
+  },
+  {
+    "path": "/policies/shipping--delivery",
+    "sourceUrl": "https://nestcloud.in/policies/shipping--delivery",
+    "sourceUpdated": "Last updated: 7 August 2026",
+    "retrieved": "2026-10-27",
+    "normalizedBodySHA256": "99486ec97e381f6c71de0233f7737b37fc338bcd1afbde00ce247d51cd7ef527",
+    "characters": 3230,
+    "sections": 12
+  },
+  {
+    "path": "/policies/cancellation--refund",
+    "sourceUrl": "https://nestcloud.in/policies/cancellation--refund",
+    "sourceUpdated": "Last updated: 7 August 2026",
+    "retrieved": "2026-10-27",
+    "normalizedBodySHA256": "c964083977f7e25343b5c00c4c259baa7b323898e2358d8bbd8ef1e4a2855559",
+    "characters": 5558,
+    "sections": 13
+  },
+  {
+    "path": "/policies/warranty",
+    "sourceUrl": "https://nestcloud.in/policies/warranty",
+    "sourceUpdated": "Last updated: 7 August 2026",
+    "retrieved": "2026-10-27",
+    "normalizedBodySHA256": "5ae645f61c9fdca9c8936dfb1f61fc3436a6d493fc8d1622e17a707750a9ffa6",
+    "characters": 4722,
+    "sections": 15
+  },
+  {
+    "path": "/policies/sla",
+    "sourceUrl": "https://nestcloud.in/policies/sla",
+    "sourceUpdated": "Last updated: 17 Sep 2026",
+    "retrieved": "2026-10-27",
+    "normalizedBodySHA256": "ca0632b79109c875c979af69df92e8b823134bc845b12d74f8c0f3345af3d86a",
+    "characters": 10650,
+    "sections": 16
+  }
+]

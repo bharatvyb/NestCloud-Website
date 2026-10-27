@@ -1,11 +1,77 @@
 [
- {"path":"/","title":"NestCloud Family — Your family's cloud, at home.","description":"Bring your photos, videos and files home with NestCloud Family. One product, three storage configurations, no mandatory NestCloud subscriptions."},
- {"path":"/family","title":"NestCloud Family — Storage, features & specifications","description":"Explore NestCloud Family hardware, included software, storage configurations, box contents and the one-year limited hardware warranty."},
- {"path":"/nestcloud-os","title":"NestCloud OS — Photos, Files & your family cloud","description":"Discover automatic photo backup, shared albums, personal files, remote access and the open-source foundations of NestCloud OS."},
- {"path":"/why-nestcloud","title":"Why NestCloud — Privacy, ownership & family sharing","description":"Keep your family memories on hardware you own, at home. Explore privacy, family sharing and independence from mandatory cloud subscriptions."},
- {"path":"/how-it-works","title":"How NestCloud Works — Setup & everyday use","description":"Connect NestCloud to power and your router, complete guided setup at nestcloud.local and start backing up your family's memories."},
- {"path":"/backup-plus","title":"NestCloud Backup Plus — A second SSD for protection","description":"Understand the NestCloud Family Backup Plus configuration: 1 TB usable storage and a separate physical 1 TB SSD for backup protection."},
- {"path":"/support","title":"NestCloud Support — FAQs, setup & troubleshooting","description":"Find answers about storage, backups, accounts, remote access and NestCloud OS, plus setup guidance, troubleshooting and official support links."},
- {"path":"/order","title":"Your NestCloud Family — Review your configuration","description":"Review your chosen NestCloud Family storage configuration and one-time product price. Payments and order submission are not enabled."},
- {"path":"/policies","title":"NestCloud — Policies & purchase information","description":"Read official NestCloud policies for terms, privacy, shipping, refunds, warranty and support before purchasing."}
+  {
+    "path": "/",
+    "title": "NestCloud Family — Your family's cloud, at home.",
+    "description": "Bring your photos, videos and files home with NestCloud Family. One product, three storage configurations, no mandatory NestCloud subscriptions."
+  },
+  {
+    "path": "/family",
+    "title": "NestCloud Family — Storage, features & specifications",
+    "description": "Explore NestCloud Family hardware, included software, storage configurations, box contents and the one-year limited hardware warranty."
+  },
+  {
+    "path": "/nestcloud-os",
+    "title": "NestCloud OS — Photos, Files & your family cloud",
+    "description": "Discover automatic photo backup, shared albums, personal files, remote access and the open-source foundations of NestCloud OS."
+  },
+  {
+    "path": "/why-nestcloud",
+    "title": "Why NestCloud — Privacy, ownership & family sharing",
+    "description": "Keep your family memories on hardware you own, at home. Explore privacy, family sharing and independence from mandatory cloud subscriptions."
+  },
+  {
+    "path": "/how-it-works",
+    "title": "How NestCloud Works — Setup & everyday use",
+    "description": "Connect NestCloud to power and your router, complete guided setup at nestcloud.local and start backing up your family's memories."
+  },
+  {
+    "path": "/backup-plus",
+    "title": "NestCloud Backup Plus — A second SSD for protection",
+    "description": "Understand the NestCloud Family Backup Plus configuration: 1 TB usable storage and a separate physical 1 TB SSD for backup protection."
+  },
+  {
+    "path": "/support",
+    "title": "NestCloud Support — FAQs, setup & troubleshooting",
+    "description": "Find answers about storage, backups, accounts, remote access and NestCloud OS, plus setup guidance, troubleshooting and official support links."
+  },
+  {
+    "path": "/order",
+    "title": "Your NestCloud Family — Review your configuration",
+    "description": "Review your chosen NestCloud Family storage configuration and one-time product price. Payments and order submission are not enabled."
+  },
+  {
+    "path": "/policies",
+    "title": "NestCloud — Policies & purchase information",
+    "description": "Read official NestCloud policies for terms, privacy, shipping, refunds, warranty and support before purchasing."
+  },
+  {
+    "path": "/policies/tc",
+    "title": "Terms & Conditions — NestCloud",
+    "description": "Read the complete NestCloud terms & conditions document, reproduced from the official NestCloud website. Last updated: 7 August 2026."
+  },
+  {
+    "path": "/policies/privacy-policy",
+    "title": "Privacy Policy — NestCloud",
+    "description": "Read the complete NestCloud privacy policy document, reproduced from the official NestCloud website. Last updated: 7 August 2026."
+  },
+  {
+    "path": "/policies/shipping--delivery",
+    "title": "Shipping & Delivery Policy — NestCloud",
+    "description": "Read the complete NestCloud shipping & delivery document, reproduced from the official NestCloud website. Last updated: 7 August 2026."
+  },
+  {
+    "path": "/policies/cancellation--refund",
+    "title": "Cancellation & Refund Policy — NestCloud",
+    "description": "Read the complete NestCloud cancellation & refund document, reproduced from the official NestCloud website. Last updated: 7 August 2026."
+  },
+  {
+    "path": "/policies/warranty",
+    "title": "NestCloud Warranty Policy — NestCloud",
+    "description": "Read the complete NestCloud warranty document, reproduced from the official NestCloud website. Last updated: 7 August 2026."
+  },
+  {
+    "path": "/policies/sla",
+    "title": "Service Level Agreement — NestCloud",
+    "description": "Read the complete NestCloud service level agreement document, reproduced from the official NestCloud website. Last updated: 17 Sep 2026."
+  }
 ]
