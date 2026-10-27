@@ -10,7 +10,8 @@ for(const route of routes){
  const canonical=origin+(route.path==='/'?'':route.path.slice(1)+'/');
  assert.ok(html.includes(`<title>${route.title.replaceAll('&','&amp;')}</title>`),`title ${route.path}`);
  for(const tag of [`rel="canonical" href="${canonical}"`,`property="og:url" content="${canonical}"`])assert.ok(html.includes(tag),`${tag} on ${route.path}`);
- assert.match(html,/<meta name="description" content="[^"]+"/);
+ assert.ok(html.includes(`<meta name="description" content="${route.description.replaceAll('&','&amp;').replaceAll('"','&quot;')}"`),`description ${route.path}`);
+ assert.doesNotMatch(route.description,/policy policy|agreement policy/i);
  assert.match(html,/<meta property="og:image" content="https:\/\/bharatvyb.github.io\/NestCloud-Website\//);
  for(const m of html.matchAll(/(?:src|href)="(\/[^"#?]+)(?:[?#][^"]*)?"/g)){
   assert.ok(m[1].startsWith(prefix),`base path ${m[1]}`);

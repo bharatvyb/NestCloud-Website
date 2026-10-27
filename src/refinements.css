@@ -53,3 +53,10 @@ p{color:var(--muted)}.eyebrow,.mini-label{font-size:11px;line-height:1.6}
  .storage-option{min-height:132px}.option-end{align-self:center}
  .comparison-wrap+.fine-print,.care-note p,.included-support p{font-size:14px;line-height:1.8}
 }
+
+/* Copyable order details stay beside the external contact action. */
+.purchase-enquiry{max-width:800px;margin:24px 0 40px;padding:28px;border:1px solid #d8e3f3;border-radius:20px;background:#f5f8ff}
+.purchase-enquiry h3{font-size:22px;margin:0 0 12px}.purchase-enquiry p,.purchase-enquiry label{font-size:15px;line-height:1.7}.purchase-enquiry label{display:block;font-weight:600;margin:20px 0 8px}
+.purchase-enquiry textarea{display:block;width:100%;min-height:230px;resize:vertical;padding:16px;font:inherit;font-size:15px;line-height:1.7;color:#142b49;background:white;border:1px solid #b9cce5;border-radius:12px;box-sizing:border-box}
+.purchase-enquiry textarea:focus-visible{outline:3px solid #277ce5;outline-offset:3px}.enquiry-actions{display:flex;flex-wrap:wrap;gap:12px;margin:18px 0}.purchase-enquiry [role=status]{min-height:3.4em;margin-bottom:0}
+@media(max-width:600px){.purchase-enquiry{padding:20px}.enquiry-actions{flex-direction:column}.enquiry-actions .button{width:100%;white-space:normal;text-align:center;min-height:48px}.purchase-enquiry textarea{min-height:330px}}
