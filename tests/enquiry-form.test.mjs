@@ -169,3 +169,7 @@ test('ambiguous server write failure followed by browser Back retries the same n
 test('edits after a submission and a validation failure preserve input, then receive a new ID only on valid submit',async()=>{
  await mount();await valid();await submit();const first=lastPayload().submission_id;await back();await fill('message','A new question');await fill('email','invalid');await submit();assert.equal(posts.length,1);assert.equal(container.querySelector('[name=message]').value,'A new question');await fill('email','test@example.invalid');await submit();assert.equal(posts.length,2);assert.notEqual(lastPayload().submission_id,first);
 });
+
+test('reusing the same tab after clearing a restored draft never revives the old restoration notice',async()=>{
+ await mount();await valid();await submit();await mount();await act(async()=>container.querySelector('.enquiry-clear').click());await valid();await submit();assert.doesNotMatch(container.textContent,/previous details are restored/);
+});

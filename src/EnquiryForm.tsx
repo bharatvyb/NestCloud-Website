@@ -17,7 +17,7 @@ export function EnquiryForm({type,configuration,endpoint=enquirySettings.endpoin
 }
 function EnquiryFormFields({type,configuration,endpoint,consentVersion,draftKey}:{type:EnquiryType;configuration?:Configuration;endpoint:string;consentVersion:string;draftKey:string}) {
  const key=`nestcloud.enquiry.v1.${type}.${draftKey}`;
- const [restored]=useState(()=>readDraft(key,type));
+ const [restored,setRestored]=useState(()=>readDraft(key,type));
  const [fields,setFields]=useState<EnquiryFields>(()=>restored?.fields || emptyEnquiry());
  const [submissionId,setSubmissionId]=useState(()=>restored?.submissionId || newSubmissionId());
  const [record,setRecord]=useState<EnquiryDraft|null>(restored);
@@ -34,7 +34,7 @@ function EnquiryFormFields({type,configuration,endpoint,consentVersion,draftKey}
    const saved=raw?JSON.parse(raw):null;
    if(!saved || saved.savedAt===record.savedAt)window.sessionStorage.removeItem(key);
   }catch{removed=false}
-  busy.current=false;setSubmitting(false);setFields(emptyEnquiry());setRecord(null);setSubmissionId(newSubmissionId());setErrors({});
+  busy.current=false;setSubmitting(false);setFields(emptyEnquiry());setRestored(null);setRecord(null);setSubmissionId(newSubmissionId());setErrors({});
   setNotice(removed?'Your saved enquiry details expired and have been cleared. Please enter your details again.':'Your saved enquiry details expired. We cleared this form, but could not clear browser storage. Please clear this site’s data in your browser.');
   return true;
  }
@@ -49,7 +49,7 @@ function EnquiryFormFields({type,configuration,endpoint,consentVersion,draftKey}
  }
  function startNew(){
   try{window.sessionStorage.removeItem(key)}catch{setNotice('We couldn’t clear the saved details in this tab. Please check your browser’s site storage settings.');return}
-  setFields(emptyEnquiry());setSubmissionId(newSubmissionId());setRecord(null);setErrors({});setNotice('A new enquiry is ready. Your saved details have been cleared.');busy.current=false;setSubmitting(false);
+  setFields(emptyEnquiry());setRestored(null);setSubmissionId(newSubmissionId());setRecord(null);setErrors({});setNotice('A new enquiry is ready. Your saved details have been cleared.');busy.current=false;setSubmitting(false);
   formRef.current?.querySelector<HTMLInputElement>('[name="full_name"]')?.focus();
  }
  function submit(event:React.FormEvent<HTMLFormElement>){
