@@ -56,5 +56,18 @@ test('Technical Support entry remains support with stored selection or old confi
 });
 test('new enquiry routes and enquiry links are exported and all internal destinations exist',async()=>{
  const routes=JSON.parse(await readFile(new URL('../src/routes.json',import.meta.url),'utf8'));const paths=new Set(routes.map(r=>r.path));for(const path of ['/order','/purchase-enquiry','/contact','/support'])assert.ok(paths.has(path));
- for(const path of ['/order?configuration=backup','/purchase-enquiry?configuration=backup','/contact','/support']){await navigate('/NestCloud-Website'+path);for(const a of document.querySelectorAll('a[href]')){const url=new URL(a.getAttribute('href'),location.href);if(url.origin===location.origin&&url.pathname.startsWith('/NestCloud-Website/'))assert.ok(paths.has(url.pathname.replace('/NestCloud-Website','').replace(/\/$/,'')||'/'),url.pathname)}assert.equal(document.querySelectorAll('.enquiry-fallback a').length,path.startsWith('/order')?0:1)}
+ for(const path of ['/order?configuration=backup','/purchase-enquiry?configuration=backup','/contact','/support']){await navigate('/NestCloud-Website'+path);for(const a of document.querySelectorAll('a[href]')){const url=new URL(a.getAttribute('href'),location.href);if(url.origin===location.origin&&url.pathname.startsWith('/NestCloud-Website/'))assert.ok(paths.has(url.pathname.replace('/NestCloud-Website','').replace(/\/$/,'')||'/'),url.pathname)}assert.equal(document.querySelectorAll('.enquiry-fallback a').length,path.startsWith('/order')?0:2)}
+});
+
+test('Google fixed return-to-home destination provides a route back to the saved purchase and its configuration',async()=>{
+ await navigate('/NestCloud-Website/purchase-enquiry?configuration=backup');await details('purchase');await submit();const id=Object.fromEntries(posts[0].pairs).submission_id;
+ await navigate('/NestCloud-Website/');const resume=[...document.querySelectorAll('a')].find(a=>a.textContent==='Review saved purchase enquiry');assert.ok(resume);assert.match(resume.getAttribute('href'),/purchase-enquiry\?configuration=backup$/);await follow(resume);assert.equal(document.querySelector('[name=email]').value,'journey@example.invalid');assert.equal(document.querySelector('[name=submission_id]').value,id);assert.equal(document.querySelector('[name=configuration_id]').value,'backup');
+});
+
+for(const type of ['general','support'])test(`${type} saved form can be recovered after the fixed Google return-to-home link`,async()=>{
+ await navigate('/NestCloud-Website/'+(type==='general'?'contact':'support#contact'));await details(type);await submit();const first=Object.fromEntries(posts[0].pairs);await navigate('/NestCloud-Website/');await follow([...document.querySelectorAll('a')].find(a=>a.textContent===`Review saved ${type==='general'?'contact':'support'} enquiry`));assert.equal(document.querySelector('[name=message]').value,first.message);assert.equal(document.querySelector('[name=submission_id]').value,first.submission_id);
+});
+
+test('purchase fallback targets the verified buyer route and retains device support separately',async()=>{
+ await navigate('/NestCloud-Website/purchase-enquiry?configuration=backup');const fallback=document.querySelector('.enquiry-fallback');const links=[...fallback.querySelectorAll('a')];assert.equal(links[0].getAttribute('href'),'https://nestcloud.in/reserve');assert.equal(links[1].getAttribute('href'),'https://nestcloud.in/support');assert.match(fallback.textContent,/not sent to either page/);assert.match(fallback.textContent,/Confirm your configuration and current product price/);
 });

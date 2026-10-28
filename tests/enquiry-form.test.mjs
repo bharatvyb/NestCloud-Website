@@ -130,3 +130,42 @@ test('multiple forms use distinct labels and explicit draft keys',async()=>{
  await mount('general');await act(async()=>root.render(React.createElement(React.Fragment,null,React.createElement(UI.EnquiryForm,props('general',{draftKey:'one'})),React.createElement(UI.EnquiryForm,props('general',{draftKey:'two'})))));
  const ids=[...container.querySelectorAll('[id]')].map(n=>n.id);assert.equal(ids.length,new Set(ids).size);assert.equal(container.querySelectorAll('form').length,2);
 });
+
+test('malformed saved personal details are removed, not just hidden',async()=>{
+ const key='nestcloud.enquiry.v1.purchase.default';sessionStorage.setItem(key,'{"email":"private@example.invalid",');await mount();assert.equal(sessionStorage.getItem(key),null);
+});
+test('browser CRLF expansion cannot pass client validation then fail server message length',async()=>{
+ await mount('support');await valid('support');await fill('message','a\n'.repeat(1400)+'b'.repeat(100));await submit();assert.equal(posts.length,0);assert.equal(document.activeElement.name,'message');assert.match(container.textContent,/line breaks/);
+});
+test('24-hour expiration clears personal details and consent on browser return',async()=>{
+ await mount();await valid();await submit();const old=lastPayload().submission_id;const original=Date.now;Date.now=()=>original()+UI.draftLifetime+1;
+ try{await back();assert.equal(sessionStorage.getItem('nestcloud.enquiry.v1.purchase.default'),null);assert.equal(container.querySelector('[name=email]').value,'');assert.equal(container.querySelector('[name=consent]').checked,false);assert.notEqual(container.querySelector('[name=submission_id]').value,old);assert.match(container.textContent,/expired/)}finally{Date.now=original}
+});
+
+test('exact native body limit is accepted and one additional byte is blocked',async()=>{
+ await mount();await valid();await fill('message','漢'.repeat(2100));
+ const pairs=[...new window.FormData(container.querySelector('form'))];const length=new URLSearchParams(pairs).toString().length;const padding=20000-length;assert.ok(padding>0 && 2100+padding<3000);
+ await fill('message','漢'.repeat(2100)+'a'.repeat(padding));await submit();assert.equal(posts.length,1);assert.equal(serverInput(posts[0]).contentLength,20000);assert.ok(backend.ncValidate_(serverInput(posts[0]),{consentVersion:'enquiry-v1'}));
+ await back();await fill('message','漢'.repeat(2100)+'a'.repeat(padding+1));await submit();assert.equal(posts.length,1);assert.match(container.textContent,/too long/);
+});
+test('active draft expiry timer clears stored and rendered personal information',async()=>{
+ const originalNow=Date.now,originalTimeout=window.setTimeout;const now=originalNow();Date.now=()=>now;const timers=[];window.setTimeout=(callback,ms)=>{if(ms===UI.draftLifetime){timers.push(callback);return 987654}return originalTimeout(callback,ms)};
+ try{await mount();await valid();await submit();assert.ok(timers.length);Date.now=()=>now+UI.draftLifetime;await act(async()=>timers.at(-1)());assert.equal(container.querySelector('[name=full_name]').value,'');assert.equal(container.querySelector('[name=consent]').checked,false);assert.equal(sessionStorage.length,0)}finally{Date.now=originalNow;window.setTimeout=originalTimeout}
+});
+test('clearing a submitted draft removes its restored notice and stops reuse after a refresh',async()=>{
+ await mount();await valid();await submit();const old=lastPayload().submission_id;await mount();assert.match(container.textContent,/previous details are restored/);await act(async()=>container.querySelector('.enquiry-clear').click());assert.doesNotMatch(container.textContent,/previous details are restored/);await mount();assert.equal(container.querySelector('[name=email]').value,'');assert.notEqual(container.querySelector('[name=submission_id]').value,old);
+});
+test('fallback for an unconfigured form is visible before any personal input',async()=>{
+ await mount('purchase',{endpoint:''});const fallback=container.querySelector('.enquiry-unavailable');assert.ok(fallback.querySelector('a[href="https://nestcloud.in/reserve"]'));assert.ok(fallback.compareDocumentPosition(container.querySelector('form'))&window.Node.DOCUMENT_POSITION_FOLLOWING);assert.match(fallback.textContent,/won’t transfer/);
+});
+
+test('ambiguous server write failure followed by browser Back retries the same native payload and receipt',async()=>{
+ const rows=[];let fail=true;
+ const settings={ALLOW_SUBMISSIONS:'true',SPREADSHEET_ID:'synthetic-test-sheet-identifier',CONSENT_VERSION:'enquiry-v1'};
+ const services={properties:{getProperty:k=>settings[k]??null},hash:s=>createHash('sha256').update(s).digest('hex'),now:Date.now,uuid:randomUUID,lock:()=>({tryLock:()=>true,releaseLock(){}}),sheets:()=>({metadata:()=>rows.map(row=>row.slice(0,5)),append:(tab,values)=>rows.push(values)}),flush(){if(fail)throw Error('Acknowledgement lost')}};
+ await mount();await valid();await submit();const first=lastPayload();assert.equal(backend.ncProcess_(serverInput(posts[0]),services).code,'unavailable');assert.equal(rows.length,1);assert.doesNotMatch(container.textContent,/enquiry is received\./);
+ await back();await submit();assert.deepEqual(lastPayload(),first);fail=false;const retry=backend.ncProcess_(serverInput(posts[1]),services);assert.equal(retry.code,'success');assert.equal(retry.receipt,rows[0][1]);assert.equal(rows.length,1);
+});
+test('edits after a submission and a validation failure preserve input, then receive a new ID only on valid submit',async()=>{
+ await mount();await valid();await submit();const first=lastPayload().submission_id;await back();await fill('message','A new question');await fill('email','invalid');await submit();assert.equal(posts.length,1);assert.equal(container.querySelector('[name=message]').value,'A new question');await fill('email','test@example.invalid');await submit();assert.equal(posts.length,2);assert.notEqual(lastPayload().submission_id,first);
+});

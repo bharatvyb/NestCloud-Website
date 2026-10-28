@@ -1,5 +1,7 @@
 # Phase 3B — customer enquiry journeys
 
+Historical Phase 3B checkpoint. The subsequent security/QA corrections, current validation count, fallback routes and CI behavior are documented in `ENQUIRY-SECURITY-QA-REVIEW.md`.
+
 Continues draft PR #4 on `feat/enquiry-form-components`, stacked on PR #3. No merge, deployment, DNS, pricing, policy-body or payment changes. No new packages.
 
 ## Routes and navigation

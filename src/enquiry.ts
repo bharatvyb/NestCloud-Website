@@ -1,4 +1,6 @@
 import type { Configuration } from './config';
+export const existingContactUrl = 'https://nestcloud.in/support';
+export const existingReservationUrl = 'https://nestcloud.in/reserve';
 export type EnquiryType = 'purchase' | 'general' | 'support';
 export type EnquiryFields = { full_name:string; email:string; mobile:string; delivery_pin:string; message:string; consent:boolean; order_reference:string; device_serial:string; issue_category:string; website:string };
 export const emptyEnquiry = ():EnquiryFields => ({full_name:'',email:'',mobile:'',delivery_pin:'',message:'',consent:false,order_reference:'',device_serial:'',issue_category:'',website:''});
@@ -46,6 +48,7 @@ export function validateEnquiry(type:EnquiryType, fields:EnquiryFields):Record<s
  if(!/^[+\d ()-]+$/.test(fields.mobile.trim()) || !/^(?:(?:\+91|91))?[6-9]\d{9}$/.test(mobile))errors.mobile='Enter a 10-digit Indian mobile number, with or without +91.';
  if(type==='purchase' && !/^[1-9]\d{5}$/.test(fields.delivery_pin.trim()))errors.delivery_pin='Please enter a valid six-digit Indian PIN code.';
  if(type!=='purchase' && !fields.message.trim())errors.message='Please tell us how we can help.';
+ if(fields.message.length<=3000 && fields.message.replace(/\r\n?|\n/g,'\r\n').length>3000)errors.message='Please shorten your message; line breaks count toward the 3,000-character limit.';
  if(type==='support' && fields.issue_category && !issueCategories.includes(fields.issue_category as typeof issueCategories[number]))errors.issue_category='Please choose an issue category from the list.';
  if(!fields.consent)errors.consent='Please confirm that we may contact you about this enquiry.';
  if(fields.website)errors.website='We couldn’t prepare this enquiry. Please start a new enquiry.';
@@ -59,5 +62,9 @@ export function readDraft(key:string,type:EnquiryType):EnquiryDraft|null {
   const valid=record.version===1 && record.type===type && uuidPattern.test(record.submissionId) && typeof record.fingerprint==='string' && record.fingerprint.length<20000 && Number.isFinite(record.savedAt) && record.savedAt<=Date.now() && Date.now()-record.savedAt<draftLifetime && record.fields && typeof record.fields.consent==='boolean' && Object.keys(emptyEnquiry()).every(k=>k==='consent' || typeof record.fields[k as keyof EnquiryFields]==='string') && Object.entries(record.fields).every(([k,v])=>Object.prototype.hasOwnProperty.call(emptyEnquiry(),k) && (typeof v==='boolean' || (typeof v==='string' && v.length<=3000)));
   if(valid)return record;
   window.sessionStorage.removeItem(key);return null;
- } catch {return null}
+ } catch {
+  // Invalid JSON can still contain personal information. Do not leave it behind.
+  try {window.sessionStorage.removeItem(key)}catch{/* Storage may be unavailable. */}
+  return null;
+ }
 }

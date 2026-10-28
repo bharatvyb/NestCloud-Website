@@ -113,3 +113,18 @@ for(const kind of ['success','price','unavailable'])test(`actual branded HTML te
  if(kind==='success')assert.ok(html.includes(r.receipt));else assert.doesNotMatch(html,/Your enquiry reference/);
  if(kind==='price')assert.match(html,/59,900/);
 });
+
+test('overlapping same-ID attempt cannot write while the first request holds the shared lock',()=>{
+ const h=harness();h.services.lock=()=>({tryLock(){if(h.flags.locked)return false;h.flags.locked=true;return true},releaseLock(){h.flags.locked=false}});
+ const adapter=h.services.sheets;let overlapping;
+ h.services.sheets=()=>{const sheets=adapter();return {...sheets,append(tab,values){overlapping=h.run();sheets.append(tab,values)}}};
+ const first=h.run();assert.equal(overlapping.code,'unavailable');assert.equal(first.code,'success');assert.equal(h.rows.length,1);assert.equal(h.run().receipt,first.receipt);
+});
+test('consent version disagreement rejects new rows but preserves an exact accepted receipt',()=>{
+ const h=harness();const first=h.run();h.settings.CONSENT_VERSION='enquiry-v2';h.now.value+=60000;assert.equal(h.run({submission_id:'22222222-2222-4222-8222-222222222222'}).code,'invalid');assert.equal(h.rows.length,1);assert.equal(h.run().receipt,first.receipt);
+});
+test('formula defenses cover every stored string field and do not convert server prices to client text',()=>{
+ const h=harness();h.run(nonPurchase('support',{full_name:'@name',email:'=test@example.invalid',message:'\t+SUM(1,2)',order_reference:'-001',device_serial:'=1'}));const row=h.rows[0].values;
+ for(const index of [6,7,8,10,19,20])assert.ok(row[index].startsWith("'"),`cell ${index}`);
+ const p=harness();p.run({displayed_price:'059900'});assert.equal(p.rows[0].values[15],59900);assert.equal(typeof p.rows[0].values[15],'number');
+});
