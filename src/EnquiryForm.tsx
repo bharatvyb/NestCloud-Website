@@ -10,7 +10,7 @@ type Props = {endpoint?:string;consentVersion?:string;draftKey?:string} & ({type
 const titles:Record<EnquiryType,string>={purchase:'Let’s bring your cloud home.',general:'What would you like to know?',support:'Let’s get things working.'};
 const issueLabels:Record<string,string>={setup:'Getting started',photos:'Photos & videos',files:'Files', 'remote-access':'Access away from home',backup:'Backups',hardware:'Device or hardware',other:'Something else'};
 
-/** Standalone component for Phase 3A; page integration is intentionally separate. */
+/** Shared native-POST form for all customer enquiry journeys. */
 export function EnquiryForm({type,configuration,endpoint=enquirySettings.endpoint,consentVersion=enquirySettings.consentVersion,draftKey='default'}:Props) {
  // Key the inner form so changing its purpose cannot leak fields between enquiry types.
  return <EnquiryFormFields key={`${type}:${draftKey}`} {...{type,configuration,endpoint,consentVersion,draftKey}}/>;

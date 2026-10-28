@@ -1,5 +1,7 @@
 # Phase 3A — reusable enquiry forms
 
+Historical Phase 3A checkpoint. Phase 3B now integrates the forms; see `PHASE-3B-ENQUIRY-JOURNEYS.md` for the current routes, setup and validation.
+
 This draft is stacked on PR #3 (`feat/apps-script-enquiry-backend`), not `main`. It adds a reusable component only. Existing Home, Order, Support, navigation, copyable purchase enquiries, pricing, legal policies, backend source and deployment workflows are unchanged. No endpoint is configured, no live submission is made, and no merge/deployment/DNS change is included.
 
 ## New files
