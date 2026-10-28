@@ -73,5 +73,15 @@
     "path": "/policies/sla",
     "title": "Service Level Agreement — NestCloud",
     "description": "Read the NestCloud service level agreement. Last updated: 17 Sep 2026."
+  },
+  {
+    "path": "/purchase-enquiry",
+    "title": "Enquire to Buy — NestCloud Family",
+    "description": "Send a NestCloud Family purchase enquiry with your selected storage configuration, product price and delivery PIN code."
+  },
+  {
+    "path": "/contact",
+    "title": "Contact Us — NestCloud",
+    "description": "Get in touch with NestCloud. Ask a question about our family cloud, product or services."
   }
 ]
