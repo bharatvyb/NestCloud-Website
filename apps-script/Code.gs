@@ -248,7 +248,8 @@ function ncNotificationStore_(id) {
       var rows=[];
       NC_TABS_.forEach(function(name){
         var source=book.getSheetByName(name);
-        if(!source || source.getLastColumn()!==NC_HEADERS_.length || JSON.stringify(source.getRange(1,1,1,NC_HEADERS_.length).getValues()[0])!==JSON.stringify(NC_HEADERS_))throw new Error('Enquiry schema');
+        if(!source)throw ncNotificationSourceError_('source_missing');
+        if(source.getLastColumn()!==NC_HEADERS_.length || JSON.stringify(source.getRange(1,1,1,NC_HEADERS_.length).getValues()[0])!==JSON.stringify(NC_HEADERS_))throw ncNotificationSourceError_('source_corrupt');
         if(source.getLastRow()>1)rows=rows.concat(source.getRange(2,1,source.getLastRow()-1,NC_HEADERS_.length).getValues());
       });
       return rows;
@@ -268,9 +269,19 @@ function ncCheckNotificationEntries_(entries) {
   });
   return seen;
 }
+function ncNotificationSourceError_(category) {
+  var error=new Error('Notification source requires attention');error.notificationSource=category;return error;
+}
+function ncNotificationSourceCategory_(error) {
+  return error && ['source_missing','source_corrupt','source_unavailable'].indexOf(error.notificationSource)>=0 ? error.notificationSource : '';
+}
+function ncReadNotificationSources_(store) {
+  try {return store.sources();}
+  catch(error){throw ncNotificationSourceError_(ncNotificationSourceCategory_(error) || 'source_unavailable');}
+}
 function ncCheckNotificationSource_(values) {
   if(values.length!==NC_HEADERS_.length || typeof values[0]!=='string' || values[0].length!==36 || !/^[0-9a-f-]{36}$/i.test(values[0]) || typeof values[1]!=='string' || values[1].length!==39 || !/^NC-[0-9a-f-]{36}$/i.test(values[1]) ||
-    !Number.isFinite(Date.parse(values[2])) || ['purchase','general','support'].indexOf(values[5])<0)throw new Error('Enquiry data');
+    !Number.isFinite(Date.parse(values[2])) || ['purchase','general','support'].indexOf(values[5])<0)throw ncNotificationSourceError_('source_corrupt');
 }
 // Called only while owning the shared script lock. A persisted append followed
 // by a failed flush is found on reconciliation instead of appended again.
@@ -278,12 +289,12 @@ function ncEnsureNotifications_(store,sources,services) {
   var entries=ncCheckNotificationEntries_(store.entries()), sourceIds={}, added=0;
   sources.forEach(function(values){
     ncCheckNotificationSource_(values);
-    if(sourceIds[values[0]])throw new Error('Duplicate enquiry ID');
+    if(sourceIds[values[0]])throw ncNotificationSourceError_('source_corrupt');
     sourceIds[values[0]]=true;
   });
   sources.forEach(function(values){
     var existing=entries[values[0]];
-    if(existing && existing.reference!==values[1])throw new Error('Outbox reference conflict');
+    if(existing && existing.reference!==values[1])throw ncNotificationSourceError_('source_corrupt');
     if(!existing && added<100){
       var record={id:values[0],reference:values[1],created:values[2],status:'Pending',attempts:0,totalAttempts:0,lastAttempt:'',nextRetry:new Date(services.now()).toISOString(),sent:'',error:'',claim:'',expires:'',recipient:''};
       store.append(record);services.flush();entries[record.id]=record;added++;
@@ -292,15 +303,16 @@ function ncEnsureNotifications_(store,sources,services) {
   return added;
 }
 function ncReconcileNotifications_(store,services,start) {
-  var sources=store.sources();sources.forEach(ncCheckNotificationSource_);
+  var sources=ncReadNotificationSources_(store);sources.forEach(ncCheckNotificationSource_);
   return ncEnsureNotifications_(store,sources.filter(function(row){return Date.parse(row[2])>=start;}),services);
 }
 function ncNotificationMail_(values,recipient,services) {
   ncCheckNotificationSource_(values);
+  if([6,7,8].some(function(index){return typeof values[index]!=='string' || !values[index].trim();}))throw ncNotificationSourceError_('source_corrupt');
   var type=values[5], labels={purchase:'Purchase Enquiry',general:'General Enquiry',support:'Technical Support Request'};
   var details=[['Enquiry reference',values[1]],['Received',services.formatIst(values[2])],['Enquiry type',labels[type]],['Customer name',values[6]],['Customer email',values[7]],['Mobile / WhatsApp',String(values[8]).replace(/^'(?=\+91)/,'')]];
   if(type==='purchase'){
-    if(!Number.isInteger(Number(values[15])) || Number(values[15])<0)throw new Error('Enquiry price');
+    if(['string','number'].indexOf(typeof values[15])<0 || !String(values[15]).trim() || !Number.isInteger(Number(values[15])) || Number(values[15])<0 || values[16]!=='INR' || [14,17,9].some(function(index){return typeof values[index]!=='string' || !values[index].trim();}))throw ncNotificationSourceError_('source_corrupt');
     details=details.concat([['Configuration',values[14]],['Usable personal storage',values[17]],['Backup Plus',values[18] ? 'Separate '+values[18]+' backup SSD' : 'Not selected'],['Product price','INR '+Number(values[15]).toLocaleString('en-IN')],['Delivery PIN',values[9]]]);
   }
   if(type==='support')[[19,'Order reference'],[20,'Device serial'],[21,'Issue category']].forEach(function(pair){if(values[pair[0]])details.push([pair[1],values[pair[0]]]);});
@@ -313,13 +325,15 @@ function ncClaimNotification_(services,config,reconcile) {
   var lock=services.lock();if(!lock.tryLock(1000))return null;
   try {
     var store=services.store(config.id);
-    if(reconcile!==false)ncReconcileNotifications_(store,services,config.start);
     var entries=store.entries();ncCheckNotificationEntries_(entries);
     var now=services.now();
     entries.forEach(function(entry){
       if(entry.status==='Sending' && Date.parse(entry.expires)<=now){entry.status='Uncertain';entry.error='worker_interrupted';store.write(entry);services.flush();}
     });
+    // Resolve expired claims even when a subsequent source scan fails closed.
+    if(reconcile!==false){ncReconcileNotifications_(store,services,config.start);entries=store.entries();ncCheckNotificationEntries_(entries);}
     if(services.properties.getProperty('NOTIFICATIONS_ENABLED')!=='true')return null;
+    now=services.now();
     var entry=entries.find(function(item){return item.status==='Pending' && Date.parse(item.nextRetry)<=now;});
     if(!entry)return null;
     if(entry.attempts>=NC_NOTIFICATION_MAX_ATTEMPTS_){entry.status='Failed';entry.error='retry_limit';store.write(entry);services.flush();return null;}
@@ -358,17 +372,22 @@ function ncProcessNotifications_(services) {
   var accepted=0,started=services.now();
   for(var count=0;count<5 && services.now()-started<45000;count++){
     var claim;
-    try {claim=ncClaimNotification_(services,config,count===0);}catch(error){return {status:'storage_unavailable',accepted:accepted};}
+    try {claim=ncClaimNotification_(services,config,count===0);}catch(error){return {status:ncNotificationSourceCategory_(error) || 'storage_unavailable',accepted:accepted};}
     if(!claim)break;
     var mail;
     try {
       var quota=services.quota();
       if(!Number.isFinite(quota) || quota<1){ncFinishNotification_(services,config,claim,'Pending','quota_exhausted');continue;}
-      var matches=services.store(config.id).sources().filter(function(row){return row[0]===claim.id;});
-      if(matches.length!==1 || matches[0][1]!==claim.reference)throw new Error('Enquiry source');
+      var matches=ncReadNotificationSources_(services.store(config.id)).filter(function(row){return row[0]===claim.id;});
+      if(!matches.length)throw ncNotificationSourceError_('source_missing');
+      if(matches.length!==1 || matches[0][1]!==claim.reference)throw ncNotificationSourceError_('source_corrupt');
       mail=ncNotificationMail_(matches[0],claim.recipient,services);
     } catch(error){
-      try {ncFinishNotification_(services,config,claim,'Pending','pre_send_failure');}catch(writeError){return {status:'storage_unavailable',accepted:accepted};}
+      var category=ncNotificationSourceCategory_(error);
+      try {
+        if(!ncFinishNotification_(services,config,claim,category==='source_missing' || category==='source_corrupt' ? 'Failed' : 'Pending',category || 'pre_send_failure'))return {status:'outcome_unrecorded',accepted:accepted};
+      }catch(writeError){return {status:'storage_unavailable',accepted:accepted};}
+      if(category==='source_missing' || category==='source_corrupt')return {status:category,accepted:accepted};
       continue;
     }
     // Recheck the kill switch before calling MailApp. An already in-flight send
