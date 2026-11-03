@@ -111,7 +111,7 @@ test('quota lookup exceptions are safe pre-send retries, not possible duplicate 
   const h=harness();h.enqueue();h.flags.quotaThrows=true;h.run();assert.equal(h.rows[0].status,'Pending');assert.equal(h.rows[0].error,'pre_send_failure');assert.equal(h.mails.length,0);h.flags.quotaThrows=false;h.clock.now=Date.parse(h.rows[0].nextRetry);h.run();assert.equal(h.mails.length,1);
 });
 test('transient source failure after claim retries safely; current enquiries are never modified',()=>{
-  const h=harness();h.enqueue();const before=JSON.stringify(h.sources);h.flags.failSourceRead=2;h.run();assert.equal(h.rows[0].status,'Pending');assert.equal(h.mails.length,0);h.clock.now=Date.parse(h.rows[0].nextRetry);h.run();assert.equal(h.rows[0].status,'Sent');assert.equal(JSON.stringify(h.sources),before);
+  const h=harness();h.enqueue();const before=JSON.stringify(h.sources);h.flags.failSourceRead=2;h.run();assert.equal(h.rows[0].status,'Pending');assert.equal(h.rows[0].error,'source_unavailable');assert.equal(h.mails.length,0);h.clock.now=Date.parse(h.rows[0].nextRetry);h.run();assert.equal(h.rows[0].status,'Sent');assert.equal(JSON.stringify(h.sources),before);
 });
 test('generic MailApp exceptions are Uncertain, including acceptance followed by exception',()=>{
   const h=harness();h.enqueue();h.flags.mailThrows=true;h.run();assert.equal(h.mails.length,1);assert.equal(h.rows[0].status,'Uncertain');assert.equal(h.rows[0].error,'mail_exception');assert.doesNotMatch(JSON.stringify(h.rows),/private possibly-accepted/);h.flags.mailThrows=false;h.clock.now+=86400000;h.run();assert.equal(h.mails.length,1);
@@ -135,7 +135,7 @@ test('kill switch checked again before MailApp; recipient snapshot remains audit
 test('missing / duplicate / conflicting outbox history fails closed',()=>{
   for(const corrupt of ['duplicate','reference','status','attempts']){
     const h=harness();h.enqueue();if(corrupt==='duplicate')h.rows.push({...h.rows[0],row:3});if(corrupt==='reference')h.rows[0].reference='NC-'+uuid(99);if(corrupt==='status')h.rows[0].status='Unknown';if(corrupt==='attempts')h.rows[0].attempts=-1;
-    assert.equal(h.run().status,'storage_unavailable');assert.equal(h.mails.length,0);
+    assert.equal(h.run().status,corrupt==='reference'?'source_corrupt':'storage_unavailable');assert.equal(h.mails.length,0);
   }
 });
 test('reconciliation cutover skips historical rows, preserves records, and repairs at most 100 gaps per pass',()=>{
@@ -205,7 +205,51 @@ test('quota recovery sends exactly once after the recorded delay',()=>{
   const h=harness();h.enqueue();h.flags.quota=0;h.run();h.flags.quota=1;h.run();assert.equal(h.mails.length,0);h.clock.now=Date.parse(h.rows[0].nextRetry);h.run();h.run();assert.equal(h.rows[0].status,'Sent');assert.equal(h.mails.length,1);
 });
 test('stored receipt header injection is rejected before MailApp',()=>{
-  const h=harness(),row=saved();row[1]+='\n';h.sources.push(row);assert.equal(h.run().status,'storage_unavailable');assert.equal(h.mails.length,0);
+  const h=harness(),row=saved();row[1]+='\n';h.sources.push(row);assert.equal(h.run().status,'source_corrupt');assert.equal(h.mails.length,0);
+});
+test('missing saved enquiry is held Failed, never automatically reconstructed or resent',()=>{
+  const h=harness();h.enqueue();h.sources.length=0;assert.equal(h.run().status,'source_missing');assert.equal(h.rows[0].status,'Failed');assert.equal(h.rows[0].error,'source_missing');assert.equal(h.rows[0].attempts,1);
+  h.sources.push(saved());h.clock.now+=86400000;h.run();assert.equal(h.rows[0].status,'Failed');assert.equal(h.mails.length,0);
+  h.settings.NOTIFICATIONS_ENABLED='false';h.c.resolveNotification_(uuid(1),'retry','CONFIRMED_NOT_SENT');h.settings.NOTIFICATIONS_ENABLED='true';h.run();assert.equal(h.rows[0].status,'Sent');assert.equal(h.mails.length,1);assert.equal(h.rows[0].totalAttempts,2);
+});
+for(const price of ['', ' ', null, false, 'not a price', -1, 1.5])test(`corrupt saved purchase price requires repair, not delivery retry: ${JSON.stringify(price)}`,()=>{
+  const h=harness();h.enqueue();h.sources[0][15]=price;const before=JSON.stringify(h.sources);assert.equal(h.run().status,'source_corrupt');assert.equal(h.rows[0].status,'Failed');assert.equal(h.rows[0].error,'source_corrupt');h.clock.now+=86400000;h.run();assert.equal(h.mails.length,0);assert.equal(JSON.stringify(h.sources),before);
+});
+for(const index of [6,7,8,9,14,16,17])test(`missing saved notification field ${index} fails closed`,()=>{
+  const h=harness();h.enqueue();h.sources[0][index]='';assert.equal(h.run().status,'source_corrupt');assert.equal(h.rows[0].status,'Failed');assert.equal(h.mails.length,0);
+});
+test('duplicate or conflicting source introduced after claim is not an email delivery failure',()=>{
+  for(const conflict of [false,true]){
+    const h=harness();h.enqueue();h.services.quota=()=>{if(conflict)h.sources[0][1]='NC-'+uuid(99);else h.sources.push(saved());return 100;};assert.equal(h.run().status,'source_corrupt');assert.equal(h.rows[0].status,'Failed');assert.equal(h.rows[0].error,'source_corrupt');assert.equal(h.mails.length,0);
+  }
+});
+test('source scan failure is reported separately before claim, without consuming delivery attempts',()=>{
+  const h=harness();h.enqueue();h.flags.sourceFail=true;assert.equal(h.run().status,'source_unavailable');assert.equal(h.rows[0].status,'Pending');assert.equal(h.rows[0].attempts,0);assert.equal(h.mails.length,0);h.flags.sourceFail=false;assert.equal(h.run().accepted,1);
+});
+test('repeated post-claim source read failures exhaust the existing bounded retry cycle',()=>{
+  const h=harness();h.enqueue();for(let attempt=1;attempt<=5;attempt++){
+    h.flags.failSourceRead=h.flags.sourceReads+2;h.run();assert.equal(h.rows[0].attempts,attempt);assert.equal(h.rows[0].error,'source_unavailable');if(attempt<5)h.clock.now=Date.parse(h.rows[0].nextRetry);
+  }
+  assert.equal(h.rows[0].status,'Failed');h.flags.failSourceRead=0;h.clock.now+=86400000;h.run();assert.equal(h.mails.length,0);
+});
+test('expired Sending becomes Uncertain even when source reconciliation fails',()=>{
+  const h=harness();h.enqueue();h.c.ncClaimNotification_(h.services,h.c.ncNotificationConfig_(h.properties));h.clock.now+=h.c.NC_NOTIFICATION_LEASE_MS_+1;h.sources[0][1]='bad receipt';assert.equal(h.run().status,'source_corrupt');assert.equal(h.rows[0].status,'Uncertain');assert.equal(h.rows[0].error,'worker_interrupted');h.sources[0]=saved();h.run();assert.equal(h.mails.length,0);assert.equal(h.rows[0].status,'Uncertain');
+});
+test('source failure with busy completion reports unrecorded outcome, not a completed retry',()=>{
+  const h=harness();h.enqueue();h.services.quota=()=>{h.sources.length=0;h.flags.busy=true;return 100;};assert.equal(h.run().status,'outcome_unrecorded');assert.equal(h.rows[0].status,'Sending');assert.equal(h.mails.length,0);h.flags.busy=false;h.clock.now+=h.c.NC_NOTIFICATION_LEASE_MS_+1;h.run();assert.equal(h.rows[0].status,'Uncertain');
+});
+test('source failure with failed status persistence holds the lease without sending',()=>{
+  const h=harness();h.enqueue();h.sources.length=0;h.flags.writeFail='Failed';assert.equal(h.run().status,'storage_unavailable');assert.equal(h.rows[0].status,'Sending');assert.equal(h.mails.length,0);h.flags.writeFail=null;h.clock.now+=h.c.NC_NOTIFICATION_LEASE_MS_+1;h.run();assert.equal(h.rows[0].status,'Uncertain');
+});
+test('actual Sheet adapter distinguishes missing/corrupt tabs from transient read errors',()=>{
+  for(const fault of ['missing','schema','read']){
+    const h=harness({NOTIFICATION_START_UTC:null}),g=googleSheets(h);h.c.setupNotificationOutbox_('2026-11-03T12:00:00Z');h.services.store=h.c.ncNotificationStore_;
+    if(fault==='missing')delete g.tabs['General Contact'];if(fault==='schema')g.tabs['General Contact'].rows[0][0]='wrong';if(fault==='read')g.tabs['General Contact'].getRange=()=>{throw Error('private Google read error');};
+    assert.equal(h.run().status,{missing:'source_missing',schema:'source_corrupt',read:'source_unavailable'}[fault]);assert.equal(h.mails.length,0);
+  }
+});
+test('full reconciliation happens once per batch; fresh source preflight remains bounded to five claims',()=>{
+  const h=harness();for(let n=1;n<=10;n++)h.enqueue(saved(n));assert.equal(h.run().accepted,5);assert.equal(h.flags.sourceReads,6);assert.equal(h.rows.filter(r=>r.status==='Pending').length,5);
 });
 test('trigger monitoring emits only safe status/counts, not recipient or error details',()=>{
   const h=harness({NOTIFICATION_EMAIL:'private-invalid-recipient'}),logs=[];h.c.console={log:message=>logs.push(message)};const result=h.c.processNotificationOutbox_();assert.equal(result.status,'invalid_configuration');assert.match(logs[0],/invalid_configuration/);assert.doesNotMatch(logs[0],/private-invalid-recipient|synthetic@example|synthetic-private-sheet/);
