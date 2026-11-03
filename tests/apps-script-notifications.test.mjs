@@ -185,6 +185,9 @@ test('trigger installation is idempotent, authorizes without sending and removes
   h.c.ScriptApp={getProjectTriggers:()=>triggers,newTrigger(handler){assert.equal(handler,'processNotificationOutbox_');return {timeBased(){return this;},everyMinutes(n){assert.equal(n,1);return this;},create(){created++;triggers.push({getHandlerFunction:()=>handler});}};},deleteTrigger(trigger){triggers.splice(triggers.indexOf(trigger),1);}};
   h.c.installNotificationWorker_();h.c.installNotificationWorker_();assert.equal(created,1);assert.equal(quotaCalls,2);h.c.removeNotificationWorker_();assert.equal(triggers.length,1);assert.equal(triggers[0].getHandlerFunction(),'unrelatedHandler');
 });
+test('outbox metadata uses the existing formula-safe cell writer for unusual valid staff mailboxes',()=>{
+  const h=harness({NOTIFICATION_START_UTC:null}),g=googleSheets(h);h.c.setupNotificationOutbox_('2026-11-03T12:00:00Z');const store=h.c.ncNotificationStore_('synthetic');h.locked(()=>h.c.ncEnsureNotifications_(store,[saved()],h.services));const entry=store.entries()[0];entry.recipient='=staff@example.invalid';h.locked(()=>store.write(entry));assert.equal(g.tabs['Notification Outbox'].rows[1][12],"'=staff@example.invalid");
+});
 test('only doGet/doPost are public; worker, reconciliation, setup and operator tools remain private',()=>{
   const functions=[...source.matchAll(/^function (\w+)\(/gm)].map(m=>m[1]);assert.deepEqual(functions.filter(name=>!name.endsWith('_')),['doGet','doPost']);
 });
