@@ -17,7 +17,7 @@ for(const route of routes){
   assert.ok(m[1].startsWith(prefix),`base path ${m[1]}`);
   assert.ok((await stat(path.join('dist',m[1].slice(prefix.length)))).isFile(),`asset ${m[1]}`);
  }
- if(route.path==='/order'){assert.match(html,/noindex,follow/);assert.ok(!sitemap.includes(`${origin}order/`))}
+ if(['/order','/purchase-enquiry'].includes(route.path)){assert.match(html,/noindex,follow/);assert.ok(!sitemap.includes(canonical))}
  else assert.ok(sitemap.includes(canonical),`sitemap ${canonical}`);
 }
 await stat('dist/.nojekyll');await stat('dist/404.html');
