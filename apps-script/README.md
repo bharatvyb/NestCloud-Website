@@ -6,7 +6,7 @@ Backend only. The React website, legal policies, catalogue prices, payment integ
 
 - `Code.gs`: public `doPost(e)`/`doGet(e)`, private validation, catalogue, lock/write adapter and editor-only setup helper.
 - `Confirmation.html`: self-contained NestCloud HTML result page. Dynamic output is escaped; no external images/scripts, personal contact details, spreadsheet ID or stack traces are rendered.
-- `appsscript.json`: V8, India time zone, spreadsheet authorization scope.
+- `appsscript.json`: V8, India time zone, spreadsheet, MailApp send-mail and trigger-management authorization scopes.
 - `../tests/apps-script.test.mjs`: Node built-in tests loading the actual `.gs` source in a VM with mocked Google services. Run `node --test tests/apps-script.test.mjs` from the repository root; existing `npm test` also discovers these tests. No packages added.
 
 A normal HTML form submits `application/x-www-form-urlencoded` by **POST**, navigating to the production Web App `/exec` URL. The result is a Google-hosted branded HTML confirmation/error page, not JSON. Success appears only after the row write and flush complete. No fetch, JSONP, opaque `no-cors` result, iframe or cross-window handshake is required. No frontend is provided in this phase.
@@ -91,6 +91,85 @@ Receipt IDs are server-generated `NC-` plus a UUID. Status starts at `New`. No c
 
 Define staff access, consent wording, retention and deletion procedures before production. Do not edit header names or the first five metadata columns. Keep archived rows/IDs private: deleting a saved row removes its idempotency and rate history. Do not promise permanent duplicate prevention after data deletion.
 
+## Optional email notifications — durable outbox
+
+This feature is **implemented and mock-tested only**. It has not been copied into the staging project, deployed, authorized for MailApp, or used to send live email. The earlier Phase 5B Google Sheet results do not validate this new email path. No live notification is enabled by this repository change.
+
+The customer-facing validation, UUIDs, catalogue, receipts, retries, three enquiry schemas and confirmation template are unchanged. Customer success still depends on the enquiry row and its flush. The outbox is best effort on that request; notification failures never change a saved success into a customer error. MailApp is never called from `doPost`.
+
+### Configuration and ownership
+
+| Script Property | Default / setting | Effect |
+| --- | --- | --- |
+| `NOTIFICATIONS_ENABLED` | Absent or `false` | Only exact `true` permits the worker to send. Separate from `ALLOW_SUBMISSIONS`. |
+| `NOTIFICATION_EMAIL` | `nestcloud@bharatvyb.com` when absent | A single valid mailbox; no display name, multiple recipients, whitespace or injected headers. Set a controlled staff **test inbox** before staging enablement. An explicitly blank/invalid value fails closed. |
+| `NOTIFICATION_START_UTC` | Set once by the setup helper | UTC eligibility cutover for reconciliation, e.g. an ISO timestamp ending in `Z`. Do not delete/reset it during upgrades. Historical enquiries before the initial cutover are not automatically emailed. |
+
+Recipient changes require no code or website deployment. A worker snapshots configuration for its bounded run, and stores the recipient for each claim; the next run uses a changed address. Sent notifications never resend because the recipient changes. Do not put these properties, a Sheet ID or any Google credentials in frontend variables or public URLs.
+
+Notifications disabled or misconfigured: enquiry saving and receipts continue. New eligible outbox entries remain Pending while disabled. If outbox creation failed, the worker reconciles missing entries after enablement, or an operator may run reconciliation without sending. Disabling cannot recall an email already in flight.
+
+Use exactly one script project as writer and one trigger-owning account. Separate projects do not share a script lock. Trigger discovery only sees the current user's triggers; do not install duplicate workers using multiple accounts. The Sheet and script remain restricted to authorized staff. Mail is sent as the Google owner, with display name `NestCloud Enquiries`; the configurable staff recipient is not a spoofed sender address and requires no DNS change. Emailing adds a copy of customer data to the recipient mailbox: include that mailbox in staff-access and retention/deletion procedures.
+
+### First setup / authorization (manual, approval required)
+
+1. Work in a separate TEST project and Sheet first. Keep `NOTIFICATIONS_ENABLED=false`. For staging, set `NOTIFICATION_EMAIL` to an inbox you own/control, **not a customer address**, before ever enabling. Preserve existing `SPREADSHEET_ID`, `CONSENT_VERSION` and enquiry tabs.
+2. Copy this reviewed `Code.gs`, unchanged `Confirmation.html`, and the updated manifest into the Apps Script editor. New scopes are `https://www.googleapis.com/auth/script.send_mail` (send email as the owner) and `https://www.googleapis.com/auth/script.scriptapp` (manage the owner's project triggers), in addition to account-wide Sheets access. Owner review/reauthorization is required before deployment; no credentials should be shared in chat or committed. No Gmail read scope, SMTP password or external service is required.
+3. **Before deploying the new backend**, temporarily append `function notificationSetupForEditor() { setupNotificationOutbox_(); }`, save, run it and review permissions. It creates only `Notification Outbox`, with 13 frozen header columns, and sets the initial cutover to the current UTC time. It does not modify enquiry records, install a trigger or enable email. Existing headers must match exactly or setup stops. Remove the wrapper and save.
+4. Verify the new tab and cutover. If deploying before setup was mistakenly allowed, saved enquiries still exist but may precede the new cutover: with notifications disabled, an operator must deliberately choose an earlier `NOTIFICATION_START_UTC` covering that gap and reconcile. Review the resulting Pending list before enablement. Moving the cutover backward deliberately backfills historical enquiries; never do that as an automatic repair.
+5. Only after separate deployment approval, update the TEST Web App via Manage deployments → Edit → New version → Deploy to preserve its `/exec` URL. Saving editor code alone does not update the versioned Web App. Time-driven triggers, however, use saved project code rather than that Web App version; disable notifications and stop/remove the owned trigger before future code upgrades.
+6. Temporarily add/run `function notificationTriggerForEditor() { installNotificationWorker_(); }`. It checks setup, requests MailApp authorization with a quota lookup, and installs at most one `processNotificationOutbox_` time-driven trigger using `everyMinutes(1)`. It sends no email and never sets `NOTIFICATIONS_ENABLED=true`. Remove the wrapper and save before any subsequent Web App deployment. Scheduling is approximate and subject to Google quotas/delays, not a one-minute delivery guarantee.
+7. While disabled, submit a synthetic enquiry and independently verify its normal receipt/row and one Pending outbox entry. Run reconciliation using a temporary editor wrapper around `reconcileNotificationOutbox_()` if needed; this sends nothing. Verify that pre-cutover historical rows were not queued. Then explicitly approve and set `NOTIFICATIONS_ENABLED=true` for the controlled test inbox only.
+
+If the outbox disappears after setup, the setup helper **refuses to recreate empty history**. Restore the original tab/backup first. Recreating it or deleting Sent rows could resend historical notifications; do not remove history to clear an operational error.
+
+### Outbox state and reconciliation
+
+The 13 columns are: `Submission ID`, `Enquiry reference`, `Created UTC`, `Status`, `Attempts`, `Total attempts`, `Last attempt UTC`, `Next retry UTC`, `Sent UTC`, `Error category`, `Claim ID`, `Claim expires UTC`, `Recipient`. This tab stores metadata only; the worker reads the existing saved enquiry row for email content, including the stored server-authoritative price. It never rewrites customer enquiry records.
+
+The original script lock covers enquiry append/flush and outbox append/flush. If only the enquiry persists, reconciliation scans the three existing tabs and creates the missing logical notification keyed by submission UUID. Existing entries, including Sent/Failed/Uncertain, are never replaced by reconciliation. Persisted append with a lost acknowledgement is discovered rather than appended again. Duplicate IDs, conflicting references or unexpected schemas fail closed; restore data rather than guessing.
+
+Each worker run reconciles at most 100 missing entries under the shared lock (no deletion or second customer ledger); it does not repeat that full reconciliation scan for each email. A run handles at most five claims and checks a 45-second budget between claims. Sheet scans remain proportional to the existing bounded/modest-volume dataset and slow individual Google calls can exceed that budget; do not raise the enquiry row cap as a scaling strategy. Reconciliation progresses over subsequent runs when more than 100 gaps exist. It cannot reconstruct erased Sent history.
+
+| Status | Meaning / action |
+| --- | --- |
+| Pending | Not sent by this attempt; wait for Next retry and a valid enabled configuration. |
+| Sending | A durable claim with unique token and 10-minute lease. Other workers cannot claim it. MailApp runs outside the script lock. A final token/lease/kill-switch check fences stale claims before sending. |
+| Sent | MailApp returned successfully and status was persisted, or an operator explicitly verified a prior send. **Not proof of inbox delivery**; spam filtering, bounces and provider behavior remain outside this system. |
+| Failed | Five safe pre-send attempts exhausted; inspect the safe error category, fix the underlying issue and use the explicit recovery procedure. |
+| Uncertain | MailApp raised after invocation, or a Sending lease expired. It may already have sent. No automatic resend. |
+
+Safe pre-send failures (e.g. quota exhausted, quota lookup/source read failure) retry with 1, 2, 4 and 8-minute exponential delays, maximum five attempts per automatic cycle. Quota is checked before each send; concurrent unrelated scripts can still consume it afterward. Exhaustion may require operator retry after the daily quota resets rather than unbounded daily sending. `Attempts` counts the current cycle; `Total attempts` survives an explicit operator retry.
+
+Generic MailApp exceptions are **not classified as definitely unsent from their text**. They become Uncertain rather than blindly retrying a potentially accepted email. If MailApp succeeds but status write/flush or the execution fails, durable Sending remains (or Sent may already have persisted). Expired Sending becomes Uncertain, never Pending. Claim tokens fence status updates, and active leases cannot be overridden by recovery.
+
+Exactly-once email delivery is impossible across MailApp and Sheets. The system provides one logical notification and no automatic resend of marked Sent/Uncertain outcomes, not an exactly-once delivery guarantee. A claim interruption before the actual MailApp call can also become Uncertain; conservative holding is intentional.
+
+### Monitoring, recovery and rollback
+
+Inspect the private outbox status, timestamps, recipient and safe error categories. The trigger execution log contains only a safe worker status and count of recorded MailApp acceptances (for example `disabled`, `invalid_configuration`, `storage_unavailable`, `outcome_unrecorded` or `processed`), so a completed trigger execution is not automatically proof that mail was sent. No public status/retry endpoint or customer notification-delivery claim is added. The code does not log customer payloads, recipient addresses, MailApp exception details or customer contact data; Google execution metadata still exists.
+
+For Failed or Uncertain entries:
+
+1. Set **only** `NOTIFICATIONS_ENABLED=false`; keep `ALLOW_SUBMISSIONS` as required for ordinary enquiries. Stop the owner trigger with a temporary editor wrapper around `removeNotificationWorker_()` (only that owner's matching notification triggers are removed). This does not kill a running execution or recall mail; wait for active executions and the full 10-minute claim lease to finish.
+2. Independently inspect the controlled recipient mailbox/provider evidence using the enquiry reference and recorded recipient/time. Absence from one inbox view alone is not proof of non-delivery. Do not add Gmail-reading permissions just for this feature.
+3. If evidence confirms it was sent, temporarily run `resolveNotification_('SUBMISSION_UUID', 'mark_sent', 'CONFIRMED_SENT')` through an editor wrapper. This records the operator's confirmation time and sends nothing.
+4. Only if evidence confirms it was **not** sent, fix the cause and temporarily run `resolveNotification_('SUBMISSION_UUID', 'retry', 'CONFIRMED_NOT_SENT')`. This resets the bounded cycle, retains Total attempts and returns it to Pending. No new logical entry/UUID is created. Remove all wrappers, reinstall the single worker if needed, and explicitly re-enable. Existing Sent entries cannot be requeued by this helper.
+5. If the outcome cannot be established, leave Uncertain and investigate; do not guess or edit its status to Pending. The confirmation literals enforce an operator acknowledgement, not automatic proof. Human mailbox/provider verification is mandatory.
+
+Rollback: set `NOTIFICATIONS_ENABLED=false`, remove the owner notification trigger, wait for in-flight work/leases, and retain the outbox plus cutover/history for audit and future reconciliation. Existing enquiries/receipts remain usable. If reverting Apps Script code, separately select the previously deployed Web App version; preserve Sheet schemas/data and do not delete Script Properties or outbox rows to simulate a clean install. The broader OAuth grant persists until the owner revokes it through Google; revocation can also affect the enquiry service, so review that separately. No rollback or deployment is executed automatically.
+
+### Controlled staging verification (not yet performed for email)
+
+- Obtain explicit approval before updating the TEST Apps Script project/deployment, granting the new scopes, installing the trigger, changing its properties or enabling sends. Do not use a real customer recipient or submit real customer data.
+- Keep notifications off; independently verify Purchase (all configurations), General and Support rows/receipts and exactly one Pending entry per submission. Verify missing/invalid email configuration cannot turn a saved enquiry into failure.
+- Deliberately retry one unchanged enquiry: same receipt, same logical outbox row. Introduce an outbox-creation failure in an isolated disposable test setup; restore it and run reconciliation, observing a single entry without changing the original enquiry.
+- Explicitly enable only the controlled staff test inbox. Independently observe each actual email, reference, IST time, correct HTML/plain-text content, saved catalogue price/capacities and optional support fields, then correlate its Sent metadata. A mock or Sent row alone is not proof of inbox delivery. Google Gmail/Outlook/mobile rendering requires real mailbox checks.
+- Check overlapping workers, disabled/enabled backlog retention and stale-claim handling. Do not exhaust real MailApp quotas, delete enquiry/outbox history, or inject ambiguous production sends to manufacture failures. Quota/write/interruption simulations remain MOCK unless separately executed under a safe approved staging procedure.
+- Verify operator recovery with evidence; never automatically resend an ambiguous live email just to complete a test. Finish by disabling notifications again, preserving evidence, and reporting PASS/MOCK/BLOCKED/FAIL honestly. No live email acceptance is claimed by the automated tests below.
+
+Run `node --test tests/apps-script-notifications.test.mjs` for the mocked notification tests, then the complete backend/frontend suites, TypeScript, build and export checks. All runtime notification helpers, installer, reconciliation and recovery functions remain underscore-suffixed/private. Temporary public editor wrappers must never be left in a deployed Web App.
+
 ## Concurrency, retries and limitations
 
 - `LockService.getScriptLock()` covers schema/read checks, duplicate lookup, rate checks, row write and `SpreadsheetApp.flush()`. The private setup helper uses the same lock. Use **one script project** as writer; independent projects do not share its lock. Human edits are not lock-protected.
@@ -109,3 +188,6 @@ Define staff access, consent wording, retention and deletion procedures before p
 - Lock and flush guidance: https://developers.google.com/apps-script/reference/lock/lock
 - Spreadsheet formula interpretation: https://developers.google.com/apps-script/reference/spreadsheet/range
 - Quotas: https://developers.google.com/apps-script/guides/services/quotas
+- MailApp send/quota authorization: https://developers.google.com/apps-script/reference/mail/mail-app
+- Time-driven scheduling: https://developers.google.com/apps-script/reference/script/clock-trigger-builder
+- Trigger management authorization: https://developers.google.com/apps-script/reference/script/script-app

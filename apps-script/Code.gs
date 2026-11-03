@@ -128,6 +128,10 @@ function ncProcess_(event, services) {
     // One row is the enquiry AND the durable idempotency/rate record. No second ledger write.
     sheets.append(tab, values.map(ncCell_));
     services.flush();
+    // The enquiry is authoritative. Outbox failures are repaired by the worker;
+    // email and notification configuration must never undo a saved receipt.
+    try { if (services.queueNotification) services.queueNotification(config.spreadsheetId, values.map(ncCell_)); }
+    catch (notificationError) { /* No payload/error details in public responses or logs. */ }
     return ncSuccess_(receipt, false);
   } catch (error) {
     // A write/flush exception can be ambiguous. Same-ID retry checks the row first.
@@ -143,6 +147,10 @@ function ncCell_(value) {
 }
 function ncServices_() {
   return {properties:PropertiesService.getScriptProperties(), lock:function(){return LockService.getScriptLock();}, now:Date.now,
+    queueNotification:function(id,values){
+      var services=ncNotificationServices_(), start=ncNotificationStart_(services.properties);
+      if(Date.parse(values[2])>=start)ncEnsureNotifications_(services.store(id),[values],services);
+    },
     uuid:function(){return Utilities.getUuid();},
     hash:function(value){return Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256,value,Utilities.Charset.UTF_8).map(function(b){return ('0'+(b & 255).toString(16)).slice(-2);}).join('');},
     flush:function(){SpreadsheetApp.flush();}, sheets:function(id){
@@ -187,4 +195,258 @@ function setupEnquirySheets_() {
     });
     SpreadsheetApp.flush();
   } finally {lock.releaseLock();}
+}
+
+// Notification metadata only: customer details remain in the existing enquiry tabs.
+var NC_OUTBOX_TAB_ = 'Notification Outbox';
+var NC_OUTBOX_HEADERS_ = ['Submission ID','Enquiry reference','Created UTC','Status','Attempts','Total attempts','Last attempt UTC','Next retry UTC','Sent UTC','Error category','Claim ID','Claim expires UTC','Recipient'];
+var NC_OUTBOX_KEYS_ = ['id','reference','created','status','attempts','totalAttempts','lastAttempt','nextRetry','sent','error','claim','expires','recipient'];
+var NC_NOTIFICATION_MAX_ATTEMPTS_ = 5;
+var NC_NOTIFICATION_LEASE_MS_ = 10 * 60 * 1000;
+
+function ncNotificationStart_(properties) {
+  var start=properties.getProperty('NOTIFICATION_START_UTC');
+  if(!start || !/^\d{4}-\d\d-\d\dT.*Z$/.test(start) || !Number.isFinite(Date.parse(start)))throw new Error('Notification setup required');
+  return Date.parse(start);
+}
+function ncNotificationConfig_(properties) {
+  var id=properties.getProperty('SPREADSHEET_ID');
+  if(!id || !/^[a-zA-Z0-9_-]{20,200}$/.test(id))throw new Error('Notification configuration');
+  var recipient=properties.getProperty('NOTIFICATION_EMAIL');
+  if(recipient===null)recipient='nestcloud@bharatvyb.com';
+  if(typeof recipient!=='string' || recipient.length>254 || /[\s\x00-\x1f\x7f]/.test(recipient) || !/^[A-Za-z0-9.!#$%&'*+\/=?^_`{|}~-]+@(?:[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?\.)+[A-Za-z]{2,63}$/.test(recipient) || /^\.|\.\.|\.@/.test(recipient))throw new Error('Notification recipient configuration');
+  return {id:id,recipient:recipient,start:ncNotificationStart_(properties)};
+}
+function ncNotificationServices_() {
+  return {properties:PropertiesService.getScriptProperties(), now:Date.now,
+    uuid:function(){return Utilities.getUuid();}, lock:function(){return LockService.getScriptLock();},
+    store:ncNotificationStore_, flush:function(){SpreadsheetApp.flush();},
+    quota:function(){return MailApp.getRemainingDailyQuota();}, send:function(mail){MailApp.sendEmail(mail);},
+    formatIst:function(timestamp){return Utilities.formatDate(new Date(timestamp),'Asia/Kolkata',"dd MMM yyyy, hh:mm:ss a 'IST'");}
+  };
+}
+function ncNotificationStore_(id) {
+  var book=SpreadsheetApp.openById(id), sheet=book.getSheetByName(NC_OUTBOX_TAB_);
+  if(!sheet || sheet.getLastColumn()!==NC_OUTBOX_HEADERS_.length || JSON.stringify(sheet.getRange(1,1,1,NC_OUTBOX_HEADERS_.length).getValues()[0])!==JSON.stringify(NC_OUTBOX_HEADERS_))throw new Error('Outbox schema');
+  function write(record,row) {
+    if(row>sheet.getMaxRows())sheet.insertRowsAfter(sheet.getMaxRows(),1);
+    sheet.getRange(row,1,1,NC_OUTBOX_HEADERS_.length).setNumberFormat('@').setValues([NC_OUTBOX_KEYS_.map(function(key){return record[key];})]);
+    record.row=row;
+  }
+  return {
+    entries:function(){
+      if(sheet.getLastRow()<2)return [];
+      return sheet.getRange(2,1,sheet.getLastRow()-1,NC_OUTBOX_HEADERS_.length).getValues().map(function(values,index){
+        var record={row:index+2};NC_OUTBOX_KEYS_.forEach(function(key,column){record[key]=values[column];});
+        record.attempts=Number(record.attempts);record.totalAttempts=Number(record.totalAttempts);
+        return record;
+      });
+    },
+    append:function(record){write(record,sheet.getLastRow()+1);},
+    write:function(record){write(record,record.row);},
+    sources:function(){
+      var rows=[];
+      NC_TABS_.forEach(function(name){
+        var source=book.getSheetByName(name);
+        if(!source || source.getLastColumn()!==NC_HEADERS_.length || JSON.stringify(source.getRange(1,1,1,NC_HEADERS_.length).getValues()[0])!==JSON.stringify(NC_HEADERS_))throw new Error('Enquiry schema');
+        if(source.getLastRow()>1)rows=rows.concat(source.getRange(2,1,source.getLastRow()-1,NC_HEADERS_.length).getValues());
+      });
+      return rows;
+    }
+  };
+}
+function ncCheckNotificationEntries_(entries) {
+  var seen={};
+  entries.forEach(function(entry){
+    if(typeof entry.id!=='string' || entry.id.length!==36 || !/^[0-9a-f-]{36}$/i.test(entry.id) || typeof entry.reference!=='string' || entry.reference.length!==39 || !/^NC-[0-9a-f-]{36}$/i.test(entry.reference) || seen[entry.id] ||
+      ['Pending','Sending','Sent','Failed','Uncertain'].indexOf(entry.status)<0 ||
+      !Number.isInteger(entry.attempts) || entry.attempts<0 || !Number.isInteger(entry.totalAttempts) || entry.totalAttempts<entry.attempts ||
+      !Number.isFinite(Date.parse(entry.created)) || (entry.status==='Pending' && !Number.isFinite(Date.parse(entry.nextRetry))) ||
+      (entry.status==='Sending' && (!entry.claim || !Number.isFinite(Date.parse(entry.expires)))) ||
+      (entry.status==='Sent' && !Number.isFinite(Date.parse(entry.sent))))throw new Error('Outbox data');
+    seen[entry.id]=entry;
+  });
+  return seen;
+}
+function ncCheckNotificationSource_(values) {
+  if(values.length!==NC_HEADERS_.length || typeof values[0]!=='string' || values[0].length!==36 || !/^[0-9a-f-]{36}$/i.test(values[0]) || typeof values[1]!=='string' || values[1].length!==39 || !/^NC-[0-9a-f-]{36}$/i.test(values[1]) ||
+    !Number.isFinite(Date.parse(values[2])) || ['purchase','general','support'].indexOf(values[5])<0)throw new Error('Enquiry data');
+}
+// Called only while owning the shared script lock. A persisted append followed
+// by a failed flush is found on reconciliation instead of appended again.
+function ncEnsureNotifications_(store,sources,services) {
+  var entries=ncCheckNotificationEntries_(store.entries()), sourceIds={}, added=0;
+  sources.forEach(function(values){
+    ncCheckNotificationSource_(values);
+    if(sourceIds[values[0]])throw new Error('Duplicate enquiry ID');
+    sourceIds[values[0]]=true;
+  });
+  sources.forEach(function(values){
+    var existing=entries[values[0]];
+    if(existing && existing.reference!==values[1])throw new Error('Outbox reference conflict');
+    if(!existing && added<100){
+      var record={id:values[0],reference:values[1],created:values[2],status:'Pending',attempts:0,totalAttempts:0,lastAttempt:'',nextRetry:new Date(services.now()).toISOString(),sent:'',error:'',claim:'',expires:'',recipient:''};
+      store.append(record);services.flush();entries[record.id]=record;added++;
+    }
+  });
+  return added;
+}
+function ncReconcileNotifications_(store,services,start) {
+  var sources=store.sources();sources.forEach(ncCheckNotificationSource_);
+  return ncEnsureNotifications_(store,sources.filter(function(row){return Date.parse(row[2])>=start;}),services);
+}
+function ncNotificationMail_(values,recipient,services) {
+  ncCheckNotificationSource_(values);
+  var type=values[5], labels={purchase:'Purchase Enquiry',general:'General Enquiry',support:'Technical Support Request'};
+  var details=[['Enquiry reference',values[1]],['Received',services.formatIst(values[2])],['Enquiry type',labels[type]],['Customer name',values[6]],['Customer email',values[7]],['Mobile / WhatsApp',String(values[8]).replace(/^'(?=\+91)/,'')]];
+  if(type==='purchase'){
+    if(!Number.isInteger(Number(values[15])) || Number(values[15])<0)throw new Error('Enquiry price');
+    details=details.concat([['Configuration',values[14]],['Usable personal storage',values[17]],['Backup Plus',values[18] ? 'Separate '+values[18]+' backup SSD' : 'Not selected'],['Product price','INR '+Number(values[15]).toLocaleString('en-IN')],['Delivery PIN',values[9]]]);
+  }
+  if(type==='support')[[19,'Order reference'],[20,'Device serial'],[21,'Issue category']].forEach(function(pair){if(values[pair[0]])details.push([pair[1],values[pair[0]]]);});
+  if(values[10])details.push(['Message',values[10]]);
+  var body='NestCloud — New enquiry\n\n'+details.map(function(pair){return pair[0]+': '+pair[1];}).join('\n')+'\n\nThis is an enquiry, not an order confirmation or payment receipt.';
+  var html='<div style="font:16px/1.6 Arial,sans-serif;color:#162d4d;max-width:680px;margin:auto"><h1 style="color:#0864e9">NestCloud</h1><h2>New '+ncEscape_(labels[type])+'</h2><table style="width:100%;border-collapse:collapse">'+details.map(function(pair){return '<tr><th style="text-align:left;vertical-align:top;padding:10px;border-bottom:1px solid #dce6f4">'+ncEscape_(pair[0])+'</th><td style="padding:10px;border-bottom:1px solid #dce6f4;overflow-wrap:anywhere;white-space:pre-wrap">'+ncEscape_(pair[1])+'</td></tr>';}).join('')+'</table><p style="color:#526780">This is an enquiry, not an order confirmation or payment receipt.</p></div>';
+  return {to:recipient,subject:'[NestCloud] New '+labels[type]+' — '+values[1],body:body,htmlBody:html,name:'NestCloud Enquiries'};
+}
+function ncClaimNotification_(services,config,reconcile) {
+  var lock=services.lock();if(!lock.tryLock(1000))return null;
+  try {
+    var store=services.store(config.id);
+    if(reconcile!==false)ncReconcileNotifications_(store,services,config.start);
+    var entries=store.entries();ncCheckNotificationEntries_(entries);
+    var now=services.now();
+    entries.forEach(function(entry){
+      if(entry.status==='Sending' && Date.parse(entry.expires)<=now){entry.status='Uncertain';entry.error='worker_interrupted';store.write(entry);services.flush();}
+    });
+    if(services.properties.getProperty('NOTIFICATIONS_ENABLED')!=='true')return null;
+    var entry=entries.find(function(item){return item.status==='Pending' && Date.parse(item.nextRetry)<=now;});
+    if(!entry)return null;
+    if(entry.attempts>=NC_NOTIFICATION_MAX_ATTEMPTS_){entry.status='Failed';entry.error='retry_limit';store.write(entry);services.flush();return null;}
+    entry.status='Sending';entry.claim=services.uuid();entry.expires=new Date(now+NC_NOTIFICATION_LEASE_MS_).toISOString();
+    entry.attempts++;entry.totalAttempts++;entry.lastAttempt=new Date(now).toISOString();entry.nextRetry='';entry.error='';entry.recipient=config.recipient;
+    store.write(entry);services.flush();
+    return entry;
+  } finally {lock.releaseLock();}
+}
+function ncFinishNotification_(services,config,claim,status,error) {
+  var lock=services.lock();if(!lock.tryLock(1000))return false;
+  try {
+    var store=services.store(config.id),entries=store.entries();ncCheckNotificationEntries_(entries);
+    var entry=entries.find(function(item){return item.id===claim.id;});
+    if(!entry || entry.status!=='Sending' || entry.claim!==claim.claim)return false;
+    entry.status=status;entry.error=error || '';entry.nextRetry='';
+    if(status==='Pending'){
+      if(entry.attempts>=NC_NOTIFICATION_MAX_ATTEMPTS_)entry.status='Failed';
+      else entry.nextRetry=new Date(services.now()+Math.min(3600000,60000*Math.pow(2,entry.attempts-1))).toISOString();
+    }
+    if(status==='Sent')entry.sent=new Date(services.now()).toISOString();
+    entry.claim='';entry.expires='';store.write(entry);services.flush();return true;
+  } finally {lock.releaseLock();}
+}
+function ncNotificationCanSend_(services,config,claim) {
+  var lock=services.lock();if(!lock.tryLock(1000))return false;
+  try {
+    var entries=services.store(config.id).entries();ncCheckNotificationEntries_(entries);
+    var entry=entries.find(function(item){return item.id===claim.id;});
+    return services.properties.getProperty('NOTIFICATIONS_ENABLED')==='true' && !!entry && entry.status==='Sending' && entry.claim===claim.claim && Date.parse(entry.expires)>services.now();
+  }finally{lock.releaseLock();}
+}
+function ncProcessNotifications_(services) {
+  if(services.properties.getProperty('NOTIFICATIONS_ENABLED')!=='true')return {status:'disabled',accepted:0};
+  var config;try {config=ncNotificationConfig_(services.properties);}catch(error){return {status:'invalid_configuration',accepted:0};}
+  var accepted=0,started=services.now();
+  for(var count=0;count<5 && services.now()-started<45000;count++){
+    var claim;
+    try {claim=ncClaimNotification_(services,config,count===0);}catch(error){return {status:'storage_unavailable',accepted:accepted};}
+    if(!claim)break;
+    var mail;
+    try {
+      var quota=services.quota();
+      if(!Number.isFinite(quota) || quota<1){ncFinishNotification_(services,config,claim,'Pending','quota_exhausted');continue;}
+      var matches=services.store(config.id).sources().filter(function(row){return row[0]===claim.id;});
+      if(matches.length!==1 || matches[0][1]!==claim.reference)throw new Error('Enquiry source');
+      mail=ncNotificationMail_(matches[0],claim.recipient,services);
+    } catch(error){
+      try {ncFinishNotification_(services,config,claim,'Pending','pre_send_failure');}catch(writeError){return {status:'storage_unavailable',accepted:accepted};}
+      continue;
+    }
+    // Recheck the kill switch before calling MailApp. An already in-flight send
+    // cannot be recalled. The durable lease prevents a second worker claiming it.
+    if(services.properties.getProperty('NOTIFICATIONS_ENABLED')!=='true'){
+      try {ncFinishNotification_(services,config,claim,'Pending','disabled_before_send');}catch(writeError){}
+      break;
+    }
+    try {if(!ncNotificationCanSend_(services,config,claim))return {status:'claim_not_current',accepted:accepted};}
+    catch(error){return {status:'storage_unavailable',accepted:accepted};}
+    try {services.send(mail);}
+    catch(error){
+      // A generic MailApp exception can happen after acceptance. Do not guess
+      // from error strings that it is safe to resend.
+      try {ncFinishNotification_(services,config,claim,'Uncertain','mail_exception');}catch(writeError){}
+      continue;
+    }
+    try {
+      if(!ncFinishNotification_(services,config,claim,'Sent',''))return {status:'outcome_unrecorded',accepted:accepted};
+      accepted++;
+    }catch(error){return {status:'outcome_unrecorded',accepted:accepted};}
+  }
+  return {status:'processed',accepted:accepted};
+}
+// Private trigger/editor functions: never callable through google.script.run.
+function processNotificationOutbox_() {
+  var result;
+  try {result=ncProcessNotifications_(ncNotificationServices_());}
+  catch(error){result={status:'worker_unavailable',accepted:0};}
+  // Operational categories/counts only, never MailApp errors or customer data.
+  console.log('NestCloud notifications: '+JSON.stringify(result));
+  return result;
+}
+function reconcileNotificationOutbox_() {
+  var services=ncNotificationServices_(), id=services.properties.getProperty('SPREADSHEET_ID'),lock=services.lock();lock.waitLock(10000);
+  try {return ncReconcileNotifications_(services.store(id),services,ncNotificationStart_(services.properties));}finally{lock.releaseLock();}
+}
+function setupNotificationOutbox_(startUtc) {
+  var properties=PropertiesService.getScriptProperties(),id=properties.getProperty('SPREADSHEET_ID'),lock=LockService.getScriptLock();lock.waitLock(10000);
+  try {
+    var book=SpreadsheetApp.openById(id),sheet=book.getSheetByName(NC_OUTBOX_TAB_);
+    if(!sheet && properties.getProperty('NOTIFICATION_START_UTC')!==null)throw new Error('Outbox missing; restore its history instead of recreating it');
+    if(!sheet)sheet=book.insertSheet(NC_OUTBOX_TAB_);
+    if(sheet.getLastRow()===0){sheet.getRange(1,1,1,NC_OUTBOX_HEADERS_.length).setValues([NC_OUTBOX_HEADERS_]);sheet.setFrozenRows(1);}
+    else if(sheet.getLastColumn()!==NC_OUTBOX_HEADERS_.length || JSON.stringify(sheet.getRange(1,1,1,NC_OUTBOX_HEADERS_.length).getValues()[0])!==JSON.stringify(NC_OUTBOX_HEADERS_))throw new Error('Existing outbox schema differs');
+    if(properties.getProperty('NOTIFICATION_START_UTC')===null){
+      var start=startUtc===undefined ? new Date().toISOString() : startUtc;
+      if(typeof start!=='string' || !/^\d{4}-\d\d-\d\dT.*Z$/.test(start) || !Number.isFinite(Date.parse(start)))throw new Error('Invalid notification start');
+      properties.setProperty('NOTIFICATION_START_UTC',start);
+    }
+    ncNotificationStart_(properties);SpreadsheetApp.flush();
+  }finally{lock.releaseLock();}
+}
+function installNotificationWorker_() {
+  var services=ncNotificationServices_(),lock=services.lock();lock.waitLock(10000);
+  try {
+    services.store(services.properties.getProperty('SPREADSHEET_ID'));ncNotificationStart_(services.properties);
+    MailApp.getRemainingDailyQuota(); // Authorize sending, but never send here.
+    var triggers=ScriptApp.getProjectTriggers().filter(function(trigger){return trigger.getHandlerFunction()==='processNotificationOutbox_';});
+    if(triggers.length>1)throw new Error('Multiple notification triggers; remove and reinstall using the owner');
+    if(!triggers.length)ScriptApp.newTrigger('processNotificationOutbox_').timeBased().everyMinutes(1).create();
+  }finally{lock.releaseLock();}
+}
+function removeNotificationWorker_() {
+  ScriptApp.getProjectTriggers().forEach(function(trigger){if(trigger.getHandlerFunction()==='processNotificationOutbox_')ScriptApp.deleteTrigger(trigger);});
+}
+function resolveNotification_(submissionId,resolution,confirmation) {
+  var services=ncNotificationServices_();
+  if(services.properties.getProperty('NOTIFICATIONS_ENABLED')==='true')throw new Error('Disable notifications before recovery');
+  if(!((resolution==='retry' && confirmation==='CONFIRMED_NOT_SENT') || (resolution==='mark_sent' && confirmation==='CONFIRMED_SENT')))throw new Error('External evidence required');
+  var lock=services.lock();lock.waitLock(10000);
+  try {
+    var store=services.store(services.properties.getProperty('SPREADSHEET_ID')), entries=store.entries();ncCheckNotificationEntries_(entries);
+    var entry=entries.find(function(item){return item.id===submissionId;});
+    if(!entry || ['Failed','Uncertain','Sending'].indexOf(entry.status)<0 || (entry.status==='Sending' && Date.parse(entry.expires)>services.now()))throw new Error('Notification not recoverable');
+    entry.status=resolution==='retry' ? 'Pending' : 'Sent';entry.error=resolution==='retry' ? 'operator_retry' : 'operator_confirmed_sent';
+    entry.claim='';entry.expires='';entry.nextRetry=resolution==='retry' ? new Date(services.now()).toISOString() : '';
+    if(resolution==='retry')entry.attempts=0;else entry.sent=new Date(services.now()).toISOString();
+    store.write(entry);services.flush();
+  }finally{lock.releaseLock();}
 }
