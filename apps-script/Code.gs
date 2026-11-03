@@ -230,7 +230,7 @@ function ncNotificationStore_(id) {
   if(!sheet || sheet.getLastColumn()!==NC_OUTBOX_HEADERS_.length || JSON.stringify(sheet.getRange(1,1,1,NC_OUTBOX_HEADERS_.length).getValues()[0])!==JSON.stringify(NC_OUTBOX_HEADERS_))throw new Error('Outbox schema');
   function write(record,row) {
     if(row>sheet.getMaxRows())sheet.insertRowsAfter(sheet.getMaxRows(),1);
-    sheet.getRange(row,1,1,NC_OUTBOX_HEADERS_.length).setNumberFormat('@').setValues([NC_OUTBOX_KEYS_.map(function(key){return record[key];})]);
+    sheet.getRange(row,1,1,NC_OUTBOX_HEADERS_.length).setNumberFormat('@').setValues([NC_OUTBOX_KEYS_.map(function(key){return ncCell_(record[key]);})]);
     record.row=row;
   }
   return {
