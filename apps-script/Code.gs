@@ -328,7 +328,16 @@ function ncClaimNotification_(services,config,reconcile) {
     var entries=store.entries();ncCheckNotificationEntries_(entries);
     var now=services.now();
     entries.forEach(function(entry){
-      if(entry.status==='Sending' && Date.parse(entry.expires)<=now){entry.status='Uncertain';entry.error='worker_interrupted';store.write(entry);services.flush();}
+      if(entry.status==='Sending' && Date.parse(entry.expires)<=now){
+        // Only the new durable pre_send phase proves MailApp was never entered.
+        // Legacy claims and send_started outcomes remain conservative.
+        if(entry.error==='pre_send'){
+          entry.status=entry.attempts>=NC_NOTIFICATION_MAX_ATTEMPTS_?'Failed':'Pending';
+          entry.error='pre_send_interrupted';entry.nextRetry=entry.status==='Pending'?new Date(now).toISOString():'';
+          entry.claim='';entry.expires='';
+        }else{entry.status='Uncertain';entry.error='worker_interrupted';}
+        store.write(entry);services.flush();
+      }
     });
     // Resolve expired claims even when a subsequent source scan fails closed.
     if(reconcile!==false){ncReconcileNotifications_(store,services,config.start);entries=store.entries();ncCheckNotificationEntries_(entries);}
@@ -338,7 +347,7 @@ function ncClaimNotification_(services,config,reconcile) {
     if(!entry)return null;
     if(entry.attempts>=NC_NOTIFICATION_MAX_ATTEMPTS_){entry.status='Failed';entry.error='retry_limit';store.write(entry);services.flush();return null;}
     entry.status='Sending';entry.claim=services.uuid();entry.expires=new Date(now+NC_NOTIFICATION_LEASE_MS_).toISOString();
-    entry.attempts++;entry.totalAttempts++;entry.lastAttempt=new Date(now).toISOString();entry.nextRetry='';entry.error='';entry.recipient=config.recipient;
+    entry.attempts++;entry.totalAttempts++;entry.lastAttempt=new Date(now).toISOString();entry.nextRetry='';entry.error='pre_send';entry.recipient=config.recipient;
     store.write(entry);services.flush();
     return entry;
   } finally {lock.releaseLock();}
@@ -359,11 +368,14 @@ function ncFinishNotification_(services,config,claim,status,error) {
   } finally {lock.releaseLock();}
 }
 function ncNotificationCanSend_(services,config,claim) {
-  var lock=services.lock();if(!lock.tryLock(1000))return false;
+  // null means contention, not a stale claim. Persist the send boundary while
+  // locked, then call MailApp outside the lock only after its flush succeeds.
+  var lock=services.lock();if(!lock.tryLock(1000))return null;
   try {
-    var entries=services.store(config.id).entries();ncCheckNotificationEntries_(entries);
+    var store=services.store(config.id),entries=store.entries();ncCheckNotificationEntries_(entries);
     var entry=entries.find(function(item){return item.id===claim.id;});
-    return services.properties.getProperty('NOTIFICATIONS_ENABLED')==='true' && !!entry && entry.status==='Sending' && entry.claim===claim.claim && Date.parse(entry.expires)>services.now();
+    if(services.properties.getProperty('NOTIFICATIONS_ENABLED')!=='true' || !entry || entry.status!=='Sending' || entry.error!=='pre_send' || entry.claim!==claim.claim || Date.parse(entry.expires)<=services.now())return false;
+    entry.error='send_started';store.write(entry);services.flush();return true;
   }finally{lock.releaseLock();}
 }
 function ncProcessNotifications_(services) {
@@ -396,7 +408,14 @@ function ncProcessNotifications_(services) {
       try {ncFinishNotification_(services,config,claim,'Pending','disabled_before_send');}catch(writeError){}
       break;
     }
-    try {if(!ncNotificationCanSend_(services,config,claim))return {status:'claim_not_current',accepted:accepted};}
+    try {
+      var canSend=ncNotificationCanSend_(services,config,claim);
+      if(canSend===null){
+        if(!ncFinishNotification_(services,config,claim,'Pending','pre_send_busy'))return {status:'pre_send_deferred',accepted:accepted};
+        continue;
+      }
+      if(!canSend)return {status:'claim_not_current',accepted:accepted};
+    }
     catch(error){return {status:'storage_unavailable',accepted:accepted};}
     try {services.send(mail);}
     catch(error){
