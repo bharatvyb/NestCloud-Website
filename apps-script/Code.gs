@@ -353,7 +353,9 @@ function ncClaimNotification_(services,config,reconcile) {
   } finally {lock.releaseLock();}
 }
 function ncFinishNotification_(services,config,claim,status,error) {
-  var lock=services.lock();if(!lock.tryLock(1000))return false;
+  // Match the customer writer's bounded wait: routine Sheet writes often take
+  // several seconds. Waiting here holds no lock and never invokes MailApp again.
+  var lock=services.lock();if(!lock.tryLock(10000))return false;
   try {
     var store=services.store(config.id),entries=store.entries();ncCheckNotificationEntries_(entries);
     var entry=entries.find(function(item){return item.id===claim.id;});

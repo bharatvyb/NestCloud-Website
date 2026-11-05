@@ -198,6 +198,16 @@ test('actual customer service adapter queues only eligible saved rows and shares
 test('busy completion after MailApp acceptance holds the claim instead of resending',()=>{
   const h=harness();h.enqueue();h.flags.onSend=()=>{h.flags.busy=true;};assert.equal(h.run().status,'outcome_unrecorded');assert.equal(h.rows[0].status,'Sending');h.flags.busy=false;h.clock.now+=h.c.NC_NOTIFICATION_LEASE_MS_+1;h.run();assert.equal(h.rows[0].status,'Uncertain');assert.equal(h.mails.length,1);
 });
+test('completion waits through a normal concurrent customer write and records acceptance once',()=>{
+  const h=harness();h.enqueue();const original=h.services.lock;h.flags.onSend=()=>{h.flags.busy=true;};let waited=false;
+  h.services.lock=()=>{const lock=original();return {...lock,tryLock(ms){if(h.flags.busy && ms===10000){waited=true;h.clock.now+=3000;h.flags.busy=false;}return lock.tryLock();}};};
+  assert.equal(h.run().accepted,1);assert.ok(waited);assert.equal(h.rows[0].status,'Sent');assert.equal(h.mails.length,1);h.run();assert.equal(h.mails.length,1);
+});
+test('pre-send contention can record its safe Pending state after the customer lock releases',()=>{
+  const h=harness();h.enqueue();const original=h.services.lock;h.services.quota=()=>{h.flags.busy=true;return 100;};
+  h.services.lock=()=>{const lock=original();return {...lock,tryLock(ms){if(h.flags.busy && ms===10000){h.clock.now+=3000;h.flags.busy=false;}return lock.tryLock();}};};
+  h.run();assert.equal(h.rows[0].status,'Pending');assert.equal(h.rows[0].error,'pre_send_busy');assert.equal(h.mails.length,0);h.services.quota=()=>100;h.clock.now=Date.parse(h.rows[0].nextRetry);assert.equal(h.run().accepted,1);assert.equal(h.mails.length,1);
+});
 test('worker fences a lease that expires during preflight, before calling MailApp',()=>{
   const h=harness();h.enqueue();h.services.quota=()=>{h.clock.now+=h.c.NC_NOTIFICATION_LEASE_MS_+1;return 100;};assert.equal(h.run().status,'claim_not_current');assert.equal(h.mails.length,0);h.services.quota=()=>100;h.run();assert.equal(h.rows[0].status,'Sent');assert.equal(h.rows[0].attempts,2);assert.equal(h.mails.length,1);
 });
