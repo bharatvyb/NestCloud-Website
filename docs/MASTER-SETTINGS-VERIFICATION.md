@@ -2,13 +2,13 @@
 
 ## Automated verification
 
-`npm test`: 240 tests passed. `npx tsc --noEmit`, `npm run build`, `npm run check:export`, and `git diff --check` passed. The build exported and validated 17 pages. GitHub PR #6 validation passed for implementation `44bf37b` and layout follow-up `127cc8c`.
+`npm test`: 240 tests passed. `npx tsc --noEmit`, `npm run build`, `npm run check:export`, and `git diff --check` passed. The build exported and validated 17 pages. GitHub PR #6 validation passed for implementation `44bf37b`, layout follow-up `127cc8c`, and final legacy-switch guard `f0920b6`.
 
 Focused coverage includes exact legacy migration/cutover retention, idempotent reruns, schema conflicts, required values, boolean false/numeric zero, numeric bounds, execution caching, fresh notification kill switch, ignoring retained properties, public/private separation, stock-controlled new purchases, accepted duplicate receipts, unchanged server prices, frontend consent loading and safe failure. The existing notification concurrency/recovery suite remains passing.
 
 ## Live TEST verification — 5 November 2026
 
-PASS — The existing TEST project and SAME restricted spreadsheet were used. No resources were renamed. The existing Web App was updated to version 5, description `TEST MasterSettings migration — PR #6 127cc8c; notifications disabled`, retaining its URL and owner/anonymous access settings. No website publication, merge, DNS, Canva or domain change was performed.
+PASS — The existing TEST project and SAME restricted spreadsheet were used. No resources were renamed. The migration was first validated on Web App version 5 (`127cc8c`). Final source was saved with no temporary wrapper and deployed as version 6, description `TEST MasterSettings — PR #6 f0920b6; migration safeguards; notifications disabled`, retaining its URL and owner/anonymous access settings. The local staging purchase form successfully loaded settings from this final version with no console errors. No website publication, merge, DNS, Canva or domain change was performed.
 
 PASS — Migration added 13 settings and a SettingsWiki tab documenting those settings plus SPREADSHEET_ID. The six explicitly configured values were copied exactly; four optional numeric values preserve their prior effective defaults. The three newly approved stock switches were initialized TRUE. A second migration reported zero added settings and preserved existing values.
 
