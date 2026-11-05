@@ -109,12 +109,15 @@ function migrateMasterSettings_() {
     if(wiki && (wiki.getLastColumn()!==7 || JSON.stringify(wiki.getRange(1,1,1,7).getValues()[0])!==JSON.stringify(header)))throw new Error('SettingsWiki schema');
     if(!sheet){sheet=book.insertSheet('MasterSettings');sheet.getRange(1,1,1,2).setValues([['Key','Value']]);sheet.setFrozenRows(1);}
     if(rows.length)sheet.getRange(sheet.getLastRow()+1,1,rows.length,2).setNumberFormat('@').setValues(rows);
+    sheet.setColumnWidth(1,260);sheet.setColumnWidth(2,520);sheet.getRange(1,1,sheet.getLastRow(),2).setWrap(true);
     SpreadsheetApp.flush();ncSettingsCache_=null;ncReadSettings_(sheet);
     if(!wiki){wiki=book.insertSheet('SettingsWiki');wiki.getRange(1,1,1,7).setValues([header]);wiki.setFrozenRows(1);}
     // Reference content only; no customer data or actual private configuration values.
     var reference=NC_SETTING_SPECS_.map(function(spec){return [spec[0],spec[1],spec[2],spec[3]===null?'Required; preserve existing value':spec[3],spec[4],spec[5],'No (after initial code deployment)'];});
     reference.push(['SPREADSHEET_ID','Only necessary bootstrap Script Property','Existing private spreadsheet ID','Required; no default','Settings/bootstrap','Private','No; retargeting requires separate approval']);
     wiki.getRange(2,1,reference.length,7).setNumberFormat('@').setValues(reference);
+    [260,320,300,300,220,160,320].forEach(function(width,index){wiki.setColumnWidth(index+1,width);});
+    wiki.getRange(1,1,reference.length+1,7).setWrap(true);wiki.autoResizeRows(1,reference.length+1);
     SpreadsheetApp.flush();
     return {status:'migrated',added:rows.length,legacyPropertiesRetained:true};
   }finally{lock.releaseLock();}
