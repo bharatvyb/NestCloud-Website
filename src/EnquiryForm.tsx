@@ -3,7 +3,7 @@ import { flushSync } from 'react-dom';
 import { ArrowRight, ShieldCheck } from 'lucide-react';
 import { formatPrice, type Configuration } from './config';
 import { sitePath } from './site';
-import { draftLifetime, emptyEnquiry, existingContactUrl, existingReservationUrl, enquirySettings, issueCategories, newSubmissionId, payloadFor, readDraft, validConsentVersion, validEndpoint, validateEnquiry, type EnquiryDraft, type EnquiryFields, type EnquiryType } from './enquiry';
+import { draftLifetime, emptyEnquiry, existingContactUrl, existingReservationUrl, enquirySettings, issueCategories, loadPublicEnquirySettings, newSubmissionId, payloadFor, readDraft, validConsentVersion, validEndpoint, validateEnquiry, type EnquiryDraft, type EnquiryFields, type EnquiryType, type PublicEnquirySettings } from './enquiry';
 import './enquiry.css';
 
 type Props = {endpoint?:string;consentVersion?:string;draftKey?:string} & ({type:'purchase';configuration:Configuration}|{type:'general'|'support';configuration?:never});
@@ -12,10 +12,24 @@ const issueLabels:Record<string,string>={setup:'Getting started',photos:'Photos 
 
 /** Shared native-POST form for all customer enquiry journeys. */
 export function EnquiryForm({type,configuration,endpoint=enquirySettings.endpoint,consentVersion=enquirySettings.consentVersion,draftKey='default'}:Props) {
+ const [settings,setSettings]=useState<{endpoint:string;value:PublicEnquirySettings}|null>(null);
+ useEffect(()=>{
+  let controller:AbortController;
+  const refresh=()=>{
+   controller?.abort();controller=new AbortController();setSettings(null);
+   const signal=controller.signal;
+   loadPublicEnquirySettings(endpoint,signal).then(value=>{if(!signal.aborted)setSettings({endpoint,value})}).catch(()=>{/* Fail closed; never use stale build settings. */});
+  };
+  refresh();window.addEventListener('pageshow',refresh);
+  return()=>{controller.abort();window.removeEventListener('pageshow',refresh)};
+ },[endpoint]);
+ const current=settings?.endpoint===endpoint?settings.value:null;
+ const available=!!current?.available;
+ const inStock=type!=='purchase' || !!(configuration && current?.stock[configuration.id]);
  // Key the inner form so changing its purpose cannot leak fields between enquiry types.
- return <EnquiryFormFields key={`${type}:${draftKey}`} {...{type,configuration,endpoint,consentVersion,draftKey}}/>;
+ return <EnquiryFormFields key={`${type}:${draftKey}`} {...{type,configuration,endpoint,draftKey,available,inStock}} consentVersion={current?.consentVersion || consentVersion}/>;
 }
-function EnquiryFormFields({type,configuration,endpoint,consentVersion,draftKey}:{type:EnquiryType;configuration?:Configuration;endpoint:string;consentVersion:string;draftKey:string}) {
+function EnquiryFormFields({type,configuration,endpoint,consentVersion,draftKey,available,inStock}:{type:EnquiryType;configuration?:Configuration;endpoint:string;consentVersion:string;draftKey:string;available:boolean;inStock:boolean}) {
  const key=`nestcloud.enquiry.v1.${type}.${draftKey}`;
  const [restored,setRestored]=useState(()=>readDraft(key,type));
  const [fields,setFields]=useState<EnquiryFields>(()=>restored?.fields || emptyEnquiry());
@@ -25,7 +39,7 @@ function EnquiryFormFields({type,configuration,endpoint,consentVersion,draftKey}
  const [notice,setNotice]=useState('');
  const [submitting,setSubmitting]=useState(false);
  const busy=useRef(false),formRef=useRef<HTMLFormElement>(null),id=useId();
- const configured=validEndpoint(endpoint) && validConsentVersion(consentVersion);
+ const configured=available && validEndpoint(endpoint) && validConsentVersion(consentVersion);
  function expireSaved(){
   if(!record || Date.now()<record.savedAt+draftLifetime)return false;
   let removed=true;
@@ -56,6 +70,7 @@ function EnquiryFormFields({type,configuration,endpoint,consentVersion,draftKey}
   event.preventDefault();
   if(expireSaved() || busy.current)return;
   if(!configured){setNotice('This form is not accepting enquiries yet. Nothing has been sent.');return}
+  if(!inStock){setNotice('This configuration is currently unavailable. Please choose another configuration or contact us. Nothing has been sent.');return}
   const nextErrors=validateEnquiry(type,fields);
   const payload=payloadFor(type,fields,consentVersion,configuration);
   // Match browser form newline encoding when checking the backend's 20 KB limit.
@@ -84,6 +99,7 @@ function EnquiryFormFields({type,configuration,endpoint,consentVersion,draftKey}
   <p className="enquiry-intro">{type==='purchase'?'Tell us a little about yourself. We’ll help with availability and delivery.':type==='general'?'Ask a question and our team will get back to you.':'Tell us what’s happening, and we’ll help you find the next step.'} Fields marked required need an answer.</p>
   {!configured&&<aside className="enquiry-unavailable" role="status"><strong>This form is not accepting enquiries yet.</strong><p>For now, use reservations for buying questions or device support if you already own NestCloud. Your details and selection here won’t transfer there.</p><a href={type==='purchase'?existingReservationUrl:existingContactUrl} target="_blank" rel="noreferrer">{type==='purchase'?'Visit NestCloud reservations (opens in a new tab)':'Existing device support (opens in a new tab)'}</a>{type==='general'&&<p><a href={existingReservationUrl} target="_blank" rel="noreferrer">Buying a NestCloud? Visit reservations (opens in a new tab)</a></p>}</aside>}
   {type==='purchase' && configuration && <div className="enquiry-product" aria-label="Your selected NestCloud"><div><strong>NestCloud Family · {configuration.name}</strong><p>{configuration.storage}</p></div><div><strong>{formatPrice(configuration.price)}</strong><p>One-time product price</p></div><p className="enquiry-wide">Availability, taxes and shipping are confirmed separately. This is an enquiry, not an order or payment.</p></div>}
+  {configured&&!inStock&&<p className="enquiry-unavailable" role="status">This configuration is currently unavailable. Please choose another configuration or contact us.</p>}
   {restored&&record&&<p className="enquiry-restored">Your previous details are restored. Retry unchanged only if you did not receive confirmation. Changing the details you send starts a new enquiry.</p>}
 
   <form ref={formRef} method="post" encType="application/x-www-form-urlencoded" action={configured?endpoint:undefined} target="_self" noValidate onSubmit={submit} aria-busy={submitting}>
@@ -102,7 +118,7 @@ function EnquiryFormFields({type,configuration,endpoint,consentVersion,draftKey}
    {errors.consent&&<p className="enquiry-error" id={`${id}-consent-error`}>{errors.consent}</p>}
    <p className="enquiry-privacy"><ShieldCheck size={18} aria-hidden="true"/>On submission, your details are saved in this tab for retries and expire after 24 hours. Clear them below when you’re done. We do not collect payment details.</p>
    {!submissionId&&<p className="enquiry-unavailable" role="status">We couldn’t prepare a safe enquiry reference. Please use an up-to-date browser.</p>}
-   <div className="enquiry-actions"><button className="button" type="submit" disabled={!configured || !submissionId || submitting}>{submitting?'Opening confirmation…':'Send enquiry'}<ArrowRight size={16} aria-hidden="true"/></button><button className="enquiry-clear" type="button" disabled={submitting} onClick={startNew}>Clear details & start a new enquiry</button></div>
+   <div className="enquiry-actions"><button className="button" type="submit" disabled={!configured || !inStock || !submissionId || submitting}>{submitting?'Opening confirmation…':'Send enquiry'}<ArrowRight size={16} aria-hidden="true"/></button><button className="enquiry-clear" type="button" disabled={submitting} onClick={startNew}>Clear details & start a new enquiry</button></div>
    <p className="enquiry-notice" role={Object.keys(errors).length?'alert':'status'} aria-live="polite">{notice || 'Your enquiry is received only when the Google-hosted confirmation page says so.'}</p>
   </form>
  </section>;

@@ -25,6 +25,16 @@ export const enquirySettings = {
  consentVersion: import.meta.env.VITE_ENQUIRY_CONSENT_VERSION?.trim() || '',
 };
 export function validConsentVersion(value:string){return /^[a-zA-Z0-9._-]{1,40}$/.test(value)}
+export type PublicEnquirySettings={available:boolean;consentVersion:string;returnUrl:string;stock:Record<Configuration['id'],boolean>};
+export async function loadPublicEnquirySettings(endpoint:string,signal:AbortSignal):Promise<PublicEnquirySettings> {
+ if(!validEndpoint(endpoint))throw new Error('Enquiry settings unavailable');
+ // Simple anonymous GET: no credentials, private keys or preflight headers.
+ const response=await fetch(`${endpoint}?resource=settings`,{signal,credentials:'omit',cache:'no-store',redirect:'follow'});
+ if(!response.ok)throw new Error('Enquiry settings unavailable');
+ const data=await response.json();
+ if(!data || typeof data.available!=='boolean' || typeof data.consentVersion!=='string' || !validConsentVersion(data.consentVersion) || !['https://nestcloud.in/','https://bharatvyb.github.io/NestCloud-Website/'].includes(data.returnUrl) || !data.stock || !['512gb','1tb','backup'].every(id=>typeof data.stock[id]==='boolean'))throw new Error('Enquiry settings unavailable');
+ return {available:data.available,consentVersion:data.consentVersion,returnUrl:data.returnUrl,stock:{'512gb':data.stock['512gb'],'1tb':data.stock['1tb'],backup:data.stock.backup}};
+}
 export function payloadFor(type:EnquiryType, fields:EnquiryFields, consentVersion:string, configuration?:Configuration):Record<string,string> {
  const payload:Record<string,string>={enquiry_type:type,full_name:fields.full_name.trim(),email:fields.email.trim().toLowerCase(),mobile:fields.mobile.trim(),message:fields.message.trim().replace(/\r\n?|\n/g,'\r\n'),consent:fields.consent?'yes':'',consent_version:consentVersion,website:fields.website.trim()};
  let mobile=payload.mobile.replace(/[ ()-]/g,'');

@@ -7,7 +7,126 @@ var NC_CATALOGUE_ = Object.freeze({
 var NC_TABS_ = ['Purchase Enquiries', 'General Contact', 'Technical Support'];
 var NC_HEADERS_ = ['Submission ID', 'Enquiry reference', 'Received UTC', 'Payload SHA256', 'Email SHA256', 'Type', 'Full name', 'Email', 'Mobile', 'Delivery PIN', 'Message', 'Consent version', 'Consent received UTC', 'Configuration ID', 'Configuration', 'Product price INR', 'Currency', 'Personal storage', 'Backup SSD', 'Order reference', 'Device serial', 'Issue category', 'Status'];
 
-function doGet() {
+// Only the spreadsheet bootstrap remains in Script Properties at runtime.
+var NC_SETTING_SPECS_ = [
+  ['ALLOW_SUBMISSIONS','Enquiry intake switch','TRUE/FALSE','false','All forms','Public'],
+  ['CONSENT_VERSION','Approved consent version','1–40 letters/digits/._- ',null,'All forms','Public'],
+  ['RETURN_URL','Confirmation return destination','Approved NestCloud URL','https://nestcloud.in/','Confirmation','Public'],
+  ['NOTIFICATION_EMAIL','Single staff recipient','One valid email','nestcloud@bharatvyb.com','Notification worker','Private'],
+  ['NOTIFICATIONS_ENABLED','Notification dispatch kill switch','TRUE/FALSE','false','Notification worker','Private'],
+  ['NOTIFICATION_START_UTC','Preserved notification eligibility cutover','UTC ISO timestamp',null,'Outbox reconciliation','Private'],
+  ['EMAIL_COOLDOWN_SECONDS','Per-email submission cooldown','Integer 0–86400','60','Submission validation','Private'],
+  ['GLOBAL_WINDOW_SECONDS','Global submission window','Integer 60–86400','600','Submission validation','Private'],
+  ['GLOBAL_MAX_SUBMISSIONS','Accepted submissions per window','Integer 1–1000','30','Submission validation','Private'],
+  ['MAX_TOTAL_ROWS','Enquiry capacity safety cap','Integer 1–50000','10000','Submission validation','Private'],
+  ['STOCK_512GB','512 GB purchase availability','TRUE/FALSE','false','Purchase form/backend','Public'],
+  ['STOCK_1TB','1 TB purchase availability','TRUE/FALSE','false','Purchase form/backend','Public'],
+  ['STOCK_BACKUP_PLUS','Backup Plus purchase availability','TRUE/FALSE','false','Purchase form/backend','Public']
+];
+var ncSettingsCache_ = null;
+function ncStockKey_(id) { return {'512gb':'STOCK_512GB','1tb':'STOCK_1TB',backup:'STOCK_BACKUP_PLUS'}[id]; }
+function ncSettingsSheet_() {
+  var id=PropertiesService.getScriptProperties().getProperty('SPREADSHEET_ID');
+  if(!id || !/^[a-zA-Z0-9_-]{20,200}$/.test(id))throw new Error('Settings bootstrap');
+  return SpreadsheetApp.openById(id).getSheetByName('MasterSettings');
+}
+function ncReadSettings_(sheet) {
+  if(!sheet || sheet.getLastColumn()!==2 || sheet.getLastRow()<1)throw new Error('Settings schema');
+  var rows=sheet.getRange(1,1,sheet.getLastRow(),2).getValues();
+  if(JSON.stringify(rows.shift())!==JSON.stringify(['Key','Value']))throw new Error('Settings schema');
+  var settings=Object.create(null);
+  rows.forEach(function(row){
+    if(row[0]==='' && row[1]==='')return;
+    var key=row[0];
+    if(!NC_SETTING_SPECS_.some(function(spec){return spec[0]===key;}) || Object.prototype.hasOwnProperty.call(settings,key))throw new Error('Settings key');
+    settings[key]=row[1];
+  });
+  return settings;
+}
+function ncSettingValue_(key,value) {
+  var raw=String(value);
+  if(['ALLOW_SUBMISSIONS','NOTIFICATIONS_ENABLED','STOCK_512GB','STOCK_1TB','STOCK_BACKUP_PLUS'].indexOf(key)>=0) {
+    if(!/^(true|false)$/i.test(raw))throw new Error('Settings boolean');
+    return raw.toLowerCase();
+  }
+  if(key==='CONSENT_VERSION' && !/^[a-zA-Z0-9._-]{1,40}$/.test(raw))throw new Error('Settings consent');
+  if(key==='RETURN_URL' && raw!==ncSafeReturn_(raw))throw new Error('Settings return URL');
+  if(key==='NOTIFICATION_START_UTC')ncNotificationStart_({getProperty:function(){return raw;}});
+  if(key==='NOTIFICATION_EMAIL')ncNotificationConfig_({getProperty:function(k){return k==='SPREADSHEET_ID'?'validation-only-sheet-id':k==='NOTIFICATION_START_UTC'?'2000-01-01T00:00:00Z':raw;}});
+  var bounds={EMAIL_COOLDOWN_SECONDS:[0,86400],GLOBAL_WINDOW_SECONDS:[60,86400],GLOBAL_MAX_SUBMISSIONS:[1,1000],MAX_TOTAL_ROWS:[1,50000]}[key];
+  if(bounds && (!/^\d+$/.test(raw) || Number(raw)<bounds[0] || Number(raw)>bounds[1]))throw new Error('Settings integer');
+  return raw;
+}
+/** Private shared reader. Cache only within this execution; kill switch reads stay fresh. */
+function getSetting_(key,defaultValue) {
+  if(!NC_SETTING_SPECS_.some(function(spec){return spec[0]===key;}))throw new Error('Unknown setting');
+  if(key==='NOTIFICATIONS_ENABLED') {
+    // A disabled/malformed/unreadable switch must never authorize MailApp.
+    try { var fresh=ncReadSettings_(ncSettingsSheet_());return fresh[key]===undefined ? 'false' : ncSettingValue_(key,fresh[key]); }
+    catch(error){return 'false';}
+  }
+  if(ncSettingsCache_===null)ncSettingsCache_=ncReadSettings_(ncSettingsSheet_());
+  return Object.prototype.hasOwnProperty.call(ncSettingsCache_,key)?ncSettingValue_(key,ncSettingsCache_[key]):defaultValue;
+}
+function ncSettingsProperties_() {
+  return {getProperty:function(key){
+    return key==='SPREADSHEET_ID'?PropertiesService.getScriptProperties().getProperty(key):getSetting_(key,null);
+  },setProperty:function(key,value){
+    // Only initial outbox setup may initialize an absent cutover. Never replace history.
+    if(key!=='NOTIFICATION_START_UTC')throw new Error('Unsupported settings write');
+    var sheet=ncSettingsSheet_(),settings=ncReadSettings_(sheet);
+    if(settings[key]!==undefined)throw new Error('Cutover already configured');
+    sheet.getRange(sheet.getLastRow()+1,1,1,2).setNumberFormat('@').setValues([[key,ncSettingValue_(key,value)]]);
+    SpreadsheetApp.flush();ncSettingsCache_=null;
+  }};
+}
+function ncPublicSettings_(properties) {
+  var consent=properties.getProperty('CONSENT_VERSION');
+  if(!consent || !/^[a-zA-Z0-9._-]{1,40}$/.test(consent))throw new Error('Settings consent');
+  return {available:properties.getProperty('ALLOW_SUBMISSIONS')==='true',consentVersion:consent,
+    returnUrl:ncSafeReturn_(properties.getProperty('RETURN_URL')),
+    stock:{'512gb':properties.getProperty('STOCK_512GB')==='true','1tb':properties.getProperty('STOCK_1TB')==='true',backup:properties.getProperty('STOCK_BACKUP_PLUS')==='true'}};
+}
+/** Editor-only migration: retains every legacy property and never touches enquiry/outbox rows. */
+function migrateMasterSettings_() {
+  var properties=PropertiesService.getScriptProperties();
+  if(properties.getProperty('NOTIFICATIONS_ENABLED')==='true')throw new Error('Disable notifications before migration');
+  var lock=LockService.getScriptLock();lock.waitLock(10000);
+  try {
+    var book=SpreadsheetApp.openById(properties.getProperty('SPREADSHEET_ID'));
+    var sheet=book.getSheetByName('MasterSettings');
+    var existing=sheet?ncReadSettings_(sheet):Object.create(null),rows=[];
+    NC_SETTING_SPECS_.forEach(function(spec){
+      if(Object.prototype.hasOwnProperty.call(existing,spec[0])){existing[spec[0]]=ncSettingValue_(spec[0],existing[spec[0]]);return;} // Reruns preserve operator edits.
+      var value=properties.getProperty(spec[0]);
+      if(value===null)value=spec[0].indexOf('STOCK_')===0?'true':spec[3];
+      if(value===null)throw new Error('Required legacy setting missing: '+spec[0]);
+      rows.push([spec[0],ncSettingValue_(spec[0],value)]);
+    });
+    if(existing.NOTIFICATIONS_ENABLED==='true')throw new Error('Disable notifications before migration');
+    // Validate every candidate before creating/writing anything.
+    var wiki=book.getSheetByName('SettingsWiki'),header=['Key','Description','Allowed values','Default value','Used In','Public or private','Requires redeployment'];
+    if(wiki && (wiki.getLastColumn()!==7 || JSON.stringify(wiki.getRange(1,1,1,7).getValues()[0])!==JSON.stringify(header)))throw new Error('SettingsWiki schema');
+    if(!sheet){sheet=book.insertSheet('MasterSettings');sheet.getRange(1,1,1,2).setValues([['Key','Value']]);sheet.setFrozenRows(1);}
+    if(rows.length)sheet.getRange(sheet.getLastRow()+1,1,rows.length,2).setNumberFormat('@').setValues(rows);
+    SpreadsheetApp.flush();ncSettingsCache_=null;ncReadSettings_(sheet);
+    if(!wiki){wiki=book.insertSheet('SettingsWiki');wiki.getRange(1,1,1,7).setValues([header]);wiki.setFrozenRows(1);}
+    // Reference content only; no customer data or actual private configuration values.
+    var reference=NC_SETTING_SPECS_.map(function(spec){return [spec[0],spec[1],spec[2],spec[3]===null?'Required; preserve existing value':spec[3],spec[4],spec[5],'No (after initial code deployment)'];});
+    reference.push(['SPREADSHEET_ID','Only necessary bootstrap Script Property','Existing private spreadsheet ID','Required; no default','Settings/bootstrap','Private','No; retargeting requires separate approval']);
+    wiki.getRange(2,1,reference.length,7).setNumberFormat('@').setValues(reference);
+    SpreadsheetApp.flush();
+    return {status:'migrated',added:rows.length,legacyPropertiesRetained:true};
+  }finally{lock.releaseLock();}
+}
+
+function doGet(e) {
+  if (e && e.parameter && e.parameter.resource === 'settings') {
+    var settings;
+    try { settings = ncPublicSettings_(ncSettingsProperties_()); }
+    catch (error) { settings = {available:false}; }
+    return ContentService.createTextOutput(JSON.stringify(settings)).setMimeType(ContentService.MimeType.JSON);
+  }
   // Never look up receipts or echo query parameters, even if given an ID.
   return ncRender_({ code: 'information', title: 'Your enquiry starts at NestCloud', message: 'Please use the enquiry form on the NestCloud website. No enquiry information is available through this page.' }, ncReturnUrl_());
 }
@@ -28,7 +147,7 @@ function ncError_(code) {
   return {code: code, title: messages[code][0], message: messages[code][1]};
 }
 function ncReturnUrl_() {
-  try { return ncSafeReturn_(PropertiesService.getScriptProperties().getProperty('RETURN_URL')); }
+  try { return ncSafeReturn_(getSetting_('RETURN_URL', null)); }
   catch (error) { return 'https://nestcloud.in/'; }
 }
 function ncSafeReturn_(value) {
@@ -110,6 +229,9 @@ function ncProcess_(event, services) {
     }
     if (input.consent_version !== config.consentVersion) return ncError_('invalid');
     var product = input.enquiry_type === 'purchase' ? NC_CATALOGUE_[input.configuration_id] : null;
+    if (product && services.properties.getProperty(ncStockKey_(input.configuration_id)) !== 'true') {
+      return {code:'stock',title:'This configuration is currently unavailable',message:'No new purchase enquiry was saved. Return to NestCloud and choose an available configuration, or contact us for help.'};
+    }
     if (product && Number(input.displayed_price) !== product.price) {
       return {code:'price',title:'Please review the current product price',message:'The price shown on your form does not match the current NestCloud catalogue. No purchase enquiry was saved. Return to NestCloud, review the current price and explicitly resubmit.', price:'Current product price: ₹' + product.price.toLocaleString('en-IN') + ' · ' + product.name};
     }
@@ -146,7 +268,7 @@ function ncCell_(value) {
   return typeof value === 'string' && /^[\s]*[=+\-@\t\r]/.test(value) ? "'" + value : value;
 }
 function ncServices_() {
-  return {properties:PropertiesService.getScriptProperties(), lock:function(){return LockService.getScriptLock();}, now:Date.now,
+  return {properties:ncSettingsProperties_(), lock:function(){return LockService.getScriptLock();}, now:Date.now,
     queueNotification:function(id,values){
       var services=ncNotificationServices_(), start=ncNotificationStart_(services.properties);
       if(Date.parse(values[2])>=start)ncEnsureNotifications_(services.store(id),[values],services);
@@ -218,7 +340,7 @@ function ncNotificationConfig_(properties) {
   return {id:id,recipient:recipient,start:ncNotificationStart_(properties)};
 }
 function ncNotificationServices_() {
-  return {properties:PropertiesService.getScriptProperties(), now:Date.now,
+  return {properties:ncSettingsProperties_(), now:Date.now,
     uuid:function(){return Utilities.getUuid();}, lock:function(){return LockService.getScriptLock();},
     store:ncNotificationStore_, flush:function(){SpreadsheetApp.flush();},
     quota:function(){return MailApp.getRemainingDailyQuota();}, send:function(mail){MailApp.sendEmail(mail);},
@@ -447,7 +569,7 @@ function reconcileNotificationOutbox_() {
   try {return ncReconcileNotifications_(services.store(id),services,ncNotificationStart_(services.properties));}finally{lock.releaseLock();}
 }
 function setupNotificationOutbox_(startUtc) {
-  var properties=PropertiesService.getScriptProperties(),id=properties.getProperty('SPREADSHEET_ID'),lock=LockService.getScriptLock();lock.waitLock(10000);
+  var properties=ncSettingsProperties_(),id=properties.getProperty('SPREADSHEET_ID'),lock=LockService.getScriptLock();lock.waitLock(10000);
   try {
     var book=SpreadsheetApp.openById(id),sheet=book.getSheetByName(NC_OUTBOX_TAB_);
     if(!sheet && properties.getProperty('NOTIFICATION_START_UTC')!==null)throw new Error('Outbox missing; restore its history instead of recreating it');

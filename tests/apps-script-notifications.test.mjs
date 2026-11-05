@@ -11,7 +11,7 @@ function saved(n=1,type='purchase',time='2026-11-03T12:00:00.000Z') {
 }
 function harness(overrides={}) {
   const c=vm.createContext({Date,Number,JSON,Object,Array,String,Error});vm.runInContext(source,c);
-  const settings={SPREADSHEET_ID:'synthetic-private-sheet-reference',CONSENT_VERSION:'enquiry-test-v1',ALLOW_SUBMISSIONS:'true',NOTIFICATIONS_ENABLED:'true',NOTIFICATION_START_UTC:'2026-11-03T12:00:00.000Z',...overrides};
+  const settings={SPREADSHEET_ID:'synthetic-private-sheet-reference',CONSENT_VERSION:'enquiry-test-v1',ALLOW_SUBMISSIONS:'true',STOCK_512GB:'true',STOCK_1TB:'true',STOCK_BACKUP_PLUS:'true',NOTIFICATIONS_ENABLED:'true',NOTIFICATION_START_UTC:'2026-11-03T12:00:00.000Z',...overrides};
   const properties={getProperty:k=>settings[k]??null,setProperty(k,v){settings[k]=v;}};
   const rows=[],sources=[],mails=[],flags={locked:false,quota:100,flushes:0};const clock={now:Date.parse(settings.NOTIFICATION_START_UTC || '2026-11-03T12:00:00Z')};let serial=100;
   const store={
@@ -165,6 +165,7 @@ function googleSheets(h) {
     getRange(row,col,height,width){const sheet=this;return {getValues(){return Array.from({length:height},(_,r)=>Array.from({length:width},(_,c)=>sheet.rows[row+r-1]?.[col+c-1]??''));},setNumberFormat(){return this;},setValues(values){for(let r=0;r<height;r++){sheet.rows[row+r-1]??=[];for(let c=0;c<width;c++)sheet.rows[row+r-1][col+c-1]=values[r][c];}return this;}};}
   });
   const tabs=Object.fromEntries(Array.from(h.c.NC_TABS_).map(name=>[name,makeSheet([h.c.NC_HEADERS_])]));
+  tabs.MasterSettings=makeSheet([['Key','Value'],...Object.entries(h.settings).filter(([k,v])=>k!=='SPREADSHEET_ID'&&v!==null)]);
   const book={getSheetByName:name=>tabs[name]??null,insertSheet(name){return tabs[name]=makeSheet();}};
   h.c.PropertiesService={getScriptProperties:()=>h.properties};h.c.LockService={getScriptLock:h.services.lock};h.c.SpreadsheetApp={openById:()=>book,flush:h.services.flush};
   return {tabs,book,makeSheet};
@@ -172,7 +173,7 @@ function googleSheets(h) {
 test('setup adds only outbox schema, preserves existing 23-column enquiry records, never enables sending',()=>{
   const h=harness({NOTIFICATIONS_ENABLED:'false',NOTIFICATION_START_UTC:null}),g=googleSheets(h);g.tabs['Purchase Enquiries'].rows.push(saved());const before=JSON.stringify(g.tabs['Purchase Enquiries'].rows);
   h.c.setupNotificationOutbox_('2026-11-03T12:00:00.000Z');assert.equal(h.settings.NOTIFICATIONS_ENABLED,'false');assert.equal(JSON.stringify(g.tabs['Purchase Enquiries'].rows),before);assert.deepEqual(g.tabs['Notification Outbox'].rows[0],Array.from(h.c.NC_OUTBOX_HEADERS_));assert.equal(g.tabs['Notification Outbox'].frozen,1);
-  h.c.setupNotificationOutbox_('2020-01-01T00:00:00Z');assert.equal(h.settings.NOTIFICATION_START_UTC,'2026-11-03T12:00:00.000Z');delete g.tabs['Notification Outbox'];assert.throws(()=>h.c.setupNotificationOutbox_());assert.ok(!g.tabs['Notification Outbox']);
+  h.c.setupNotificationOutbox_('2020-01-01T00:00:00Z');assert.equal(h.c.getSetting_('NOTIFICATION_START_UTC',null),'2026-11-03T12:00:00.000Z');assert.equal(h.settings.NOTIFICATION_START_UTC,null,'legacy properties are untouched');delete g.tabs['Notification Outbox'];assert.throws(()=>h.c.setupNotificationOutbox_());assert.ok(!g.tabs['Notification Outbox']);
 });
 test('actual Sheet adapter preserves schemas and round-trips typed outbox metadata',()=>{
   const h=harness({NOTIFICATION_START_UTC:null}),g=googleSheets(h);g.tabs['General Contact'].rows.push(saved(1,'general'));h.c.setupNotificationOutbox_('2026-11-03T12:00:00Z');
@@ -275,7 +276,7 @@ test('reclaimed pre-send lease fences the old worker and permits only one send b
 });
 test('actual Sheet adapter distinguishes missing/corrupt tabs from transient read errors',()=>{
   for(const fault of ['missing','schema','read']){
-    const h=harness({NOTIFICATION_START_UTC:null}),g=googleSheets(h);h.c.setupNotificationOutbox_('2026-11-03T12:00:00Z');h.services.store=h.c.ncNotificationStore_;
+    const h=harness({NOTIFICATION_START_UTC:null}),g=googleSheets(h);h.c.setupNotificationOutbox_('2026-11-03T12:00:00Z');h.services.store=h.c.ncNotificationStore_;h.services.properties=h.c.ncSettingsProperties_();
     if(fault==='missing')delete g.tabs['General Contact'];if(fault==='schema')g.tabs['General Contact'].rows[0][0]='wrong';if(fault==='read')g.tabs['General Contact'].getRange=()=>{throw Error('private Google read error');};
     assert.equal(h.run().status,{missing:'source_missing',schema:'source_corrupt',read:'source_unavailable'}[fault]);assert.equal(h.mails.length,0);
   }
