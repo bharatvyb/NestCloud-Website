@@ -23,13 +23,23 @@ The corresponding executions at 16:13:25 and 16:14:25 IST logged `claim_not_curr
 | Correct server prices, duplicate prevention, changed submission ID | PASS: live verification before this fix |
 | Original seven recorded sends | PASS: owner confirmed actual mailbox receipt |
 | Two specific pre-send stops | Recovered through the existing guarded operator helper while notifications were disabled; now Pending, lifetime attempt counts preserved |
-| Automated regression suite | MOCK: 223 tests passed, including eight added contention/send-boundary cases |
+| Automated regression suite | MOCK: 225 tests passed, including ten added contention/send-boundary/completion cases |
 | TypeScript, build, 17-page export, diff checks | PASS |
-| Fix deployed to existing TEST endpoint | PASS: Version 3, temporary recovery wrapper removed |
-| New live email retest after the fix | BLOCKED pending explicit approval for two recovered plus five fresh synthetic emails |
+| Preflight fix deployed to existing TEST endpoint | PASS: Version 3, temporary recovery wrapper removed |
+| Approved five fresh form journeys after Version 3 | PASS: independent rows and Sent metadata for all five; mailbox arrival still requires owner confirmation |
+| Completion under concurrent form writes | FAIL reproduced: one MailApp-success outcome could not be recorded; completion-lock fix added in commit 81a07d1 |
+| Completion fix TEST deployment | BLOCKED: browser approval gate cites the earlier Phase 1 restriction; requires fresh explicit TEST-update approval |
 | Physical mobile and alternate browser engines | BLOCKED: not independently tested |
 
 The browser approval gate stopped renewed outbound-email testing. Notifications were returned to false. Independently re-read outbox: nine entries, seven Sent and two Pending; no additional recorded sends. Form intake remains enabled. No Sent history or enquiry rows were deleted or rewritten. The existing single worker remains installed. No PR merge, website redeployment, Canva or DNS change was performed for this fix.
+
+## Approved retest and second contention finding
+
+The owner subsequently approved the two recovered messages plus five fresh journeys to the same staff recipient. Live browser submissions returned five new receipts; independently refreshed Sheet counts are Purchase 11, General 8 and Support 4 (23 enquiries across earlier and current test sessions). The five fresh rows have the expected types and server prices 49900/59900/81900, and the unchanged Support retry returned the same receipt with no new notification. There are now 14 unique outbox entries: 12 Sent, one old recovered claim at `send_started`, and one old recovered claim at `pre_send`. All five fresh notifications are recorded Sent. This is not yet independent mailbox-delivery verification for the newly approved batch.
+
+The 16:41:25 IST worker logged `outcome_unrecorded` after MailApp returned, while a form write overlapped its completion step. Its one-second completion-lock wait was insufficient for routine multi-second customer writes. The code now waits up to ten seconds, without holding the lock while waiting or repeating MailApp, and preserves conservative handling of a genuine timeout/ambiguous persistence failure. Two additional mock regressions prove successful completion and safe Pending bookkeeping after simulated customer-lock release. The 16:42:25 worker also reported `storage_unavailable`; the durable pre_send marker preserves safe recovery rather than guessing delivery.
+
+The browser gate rejected applying this second code update to TEST, citing the earlier Phase 1 no-TEST-modification restriction. No workaround was attempted. Notifications were paused before maintenance and remain false. The TEST project still has the Version 3 preflight fix, not the completion fix. The two remaining claims were not reset or resent. Next steps require explicit approval to update the existing TEST project/deployment and finish only the already-approved batch. The possibly-sent claim must not be retried; reconcile acceptance/delivery evidence separately.
 
 ## Form/storage mapping
 
