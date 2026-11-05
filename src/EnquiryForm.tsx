@@ -3,7 +3,8 @@ import { flushSync } from 'react-dom';
 import { ArrowRight, ShieldCheck } from 'lucide-react';
 import { formatPrice, type Configuration } from './config';
 import { sitePath } from './site';
-import { draftLifetime, emptyEnquiry, existingContactUrl, existingReservationUrl, enquirySettings, issueCategories, loadPublicEnquirySettings, newSubmissionId, payloadFor, readDraft, validConsentVersion, validEndpoint, validateEnquiry, type EnquiryDraft, type EnquiryFields, type EnquiryType, type PublicEnquirySettings } from './enquiry';
+import { draftLifetime, emptyEnquiry, existingContactUrl, existingReservationUrl, enquirySettings, issueCategories, newSubmissionId, payloadFor, readDraft, validConsentVersion, validEndpoint, validateEnquiry, type EnquiryDraft, type EnquiryFields, type EnquiryType } from './enquiry';
+import {usePublicSettings} from './usePublicSettings';
 import './enquiry.css';
 
 type Props = {endpoint?:string;consentVersion?:string;draftKey?:string} & ({type:'purchase';configuration:Configuration}|{type:'general'|'support';configuration?:never});
@@ -12,19 +13,8 @@ const issueLabels:Record<string,string>={setup:'Getting started',photos:'Photos 
 
 /** Shared native-POST form for all customer enquiry journeys. */
 export function EnquiryForm({type,configuration,endpoint=enquirySettings.endpoint,consentVersion=enquirySettings.consentVersion,draftKey='default'}:Props) {
- const [settings,setSettings]=useState<{endpoint:string;value:PublicEnquirySettings}|null>(null);
- useEffect(()=>{
-  let controller:AbortController;
-  const refresh=()=>{
-   controller?.abort();controller=new AbortController();setSettings(null);
-   const signal=controller.signal;
-   loadPublicEnquirySettings(endpoint,signal).then(value=>{if(!signal.aborted)setSettings({endpoint,value})}).catch(()=>{/* Fail closed; never use stale build settings. */});
-  };
-  refresh();window.addEventListener('pageshow',refresh);
-  return()=>{controller.abort();window.removeEventListener('pageshow',refresh)};
- },[endpoint]);
- const current=settings?.endpoint===endpoint?settings.value:null;
- const available=!!current?.available;
+ const current=usePublicSettings(endpoint);
+ const available=!!current?.available && current.forms[type] && !current.maintenance.enabled;
  const inStock=type!=='purchase' || !!(configuration && current?.stock[configuration.id]);
  // Key the inner form so changing its purpose cannot leak fields between enquiry types.
  return <EnquiryFormFields key={`${type}:${draftKey}`} {...{type,configuration,endpoint,draftKey,available,inStock}} consentVersion={current?.consentVersion || consentVersion}/>;

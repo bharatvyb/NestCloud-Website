@@ -15,8 +15,8 @@ function harness(extra={}) {
 }
 test('migration copies exact legacy values/defaults, adds approved stock switches and both-column schema',()=>{
  const h=harness(),before=JSON.stringify(h.legacy);h.tabs['Purchase Enquiries']=h.make([['untouched']]);h.tabs['Notification Outbox']=h.make([['Sent history']]);
- const result=h.migrate();assert.equal(result.added,13);assert.equal(JSON.stringify(h.legacy),before);assert.equal(h.c.getSetting_('NOTIFICATION_START_UTC',null),h.legacy.NOTIFICATION_START_UTC);
- assert.deepEqual(h.tabs.MasterSettings.rows[0],['Key','Value']);assert.equal(h.tabs.SettingsWiki.rows.length,15);assert.equal(h.c.getSetting_('NOTIFICATIONS_ENABLED',null),'false');
+ const result=h.migrate();assert.equal(result.added,21);assert.equal(JSON.stringify(h.legacy),before);assert.equal(h.c.getSetting_('NOTIFICATION_START_UTC',null),h.legacy.NOTIFICATION_START_UTC);
+ assert.deepEqual(h.tabs.MasterSettings.rows[0],['Key','Value']);assert.equal(h.tabs.SettingsWiki.rows.length,23);assert.equal(h.c.getSetting_('NOTIFICATIONS_ENABLED',null),'false');
  for(const key of ['STOCK_512GB','STOCK_1TB','STOCK_BACKUP_PLUS'])assert.equal(h.c.getSetting_(key,null),'true');
  assert.deepEqual(h.tabs['Purchase Enquiries'].rows,[['untouched']]);assert.deepEqual(h.tabs['Notification Outbox'].rows,[['Sent history']]);
  h.set('STOCK_1TB',false);assert.equal(h.migrate().added,0);assert.equal(h.c.getSetting_('STOCK_1TB',null),'false');assert.equal(JSON.stringify(h.legacy),before);
@@ -45,6 +45,14 @@ test('reader rejects duplicate/unknown keys, invalid types and ranges without fa
 test('public JSON is an exact allowlist, never accepts a caller-selected private key',()=>{
  const h=harness();h.migrate();h.c.ContentService={MimeType:{JSON:'json'},createTextOutput(text){return {text,setMimeType(){return this}}}};
  const output=h.c.doGet({parameter:{resource:'settings',key:'NOTIFICATION_EMAIL'}}),data=JSON.parse(output.text);
- assert.deepEqual(Object.keys(data).sort(),['available','consentVersion','returnUrl','stock']);assert.equal(data.available,true);assert.deepEqual(data.stock,{'512gb':true,'1tb':true,backup:true});assert.doesNotMatch(output.text,/staff@|SPREADSHEET|NOTIFICATION|COOLDOWN|2026-11/);
+ assert.deepEqual(Object.keys(data).sort(),['available','banner','consentVersion','forms','maintenance','returnUrl','stock']);assert.equal(data.available,true);assert.deepEqual(data.stock,{'512gb':true,'1tb':true,backup:true});assert.deepEqual(data.forms,{purchase:true,general:true,support:true});assert.deepEqual(data.banner,{enabled:false,message:'Welcome to NestCloud!',link:''});assert.deepEqual(data.maintenance,{enabled:false,message:'Website temporarily unavailable.'});assert.doesNotMatch(output.text,/staff@|SPREADSHEET|NOTIFICATION|COOLDOWN|2026-11/);
  delete h.tabs.MasterSettings;h.c.ncSettingsCache_=null;assert.deepEqual(JSON.parse(h.c.doGet({parameter:{resource:'settings'}}).text),{available:false});
+});
+test('existing 13-key migration gains only eight V1 defaults, preserves edits and refreshes Sheet wiki',()=>{
+ const h=harness();h.migrate();const oldKeys=Array.from(h.c.NC_SETTING_SPECS_).slice(0,13).map(s=>s[0]);h.tabs.MasterSettings.rows=h.tabs.MasterSettings.rows.filter(r=>r[0]==='Key'||oldKeys.includes(r[0]));h.set('STOCK_1TB',false);const original=JSON.stringify(h.tabs.MasterSettings.rows),legacy=JSON.stringify(h.legacy);
+ assert.equal(h.migrate().added,8);assert.equal(JSON.stringify(h.tabs.MasterSettings.rows.slice(0,14)),original);assert.equal(JSON.stringify(h.legacy),legacy);assert.equal(h.c.getSetting_('PURCHASE_FORM_ENABLED',null),'true');assert.equal(h.c.getSetting_('BANNER_LINK',null),'');assert.equal(h.tabs.SettingsWiki.rows.length,23);assert.equal(h.migrate().added,0);
+});
+test('V1 switches/messages and HTTPS links validate without exposing private settings',()=>{
+ for(const [key,value] of [['PURCHASE_FORM_ENABLED','yes'],['CONTACT_FORM_ENABLED',1],['SUPPORT_FORM_ENABLED',''],['SITE_MAINTENANCE','maybe'],['BANNER_ENABLED','on'],['BANNER_MESSAGE','x'.repeat(501)],['MAINTENANCE_MESSAGE','bad\u0000'],['BANNER_LINK','javascript:alert(1)'],['BANNER_LINK','http://example.invalid'],['BANNER_LINK','https://user:pass@example.invalid/'],['BANNER_LINK','https://example.invalid\\@evil.invalid/'],['BANNER_LINK','https://example.invalid:99999/']]){const h=harness();h.migrate();h.set(key,value);assert.throws(()=>h.c.getSetting_(key,null),`${key}: ${value}`)}
+ const h=harness();h.migrate();h.set('BANNER_LINK','https://example.invalid/help?q=1#info');h.set('BANNER_MESSAGE','<b>Plain text</b>');assert.equal(h.c.getSetting_('BANNER_MESSAGE',null),'<b>Plain text</b>');assert.equal(h.c.getSetting_('BANNER_LINK',null),'https://example.invalid/help?q=1#info');
 });

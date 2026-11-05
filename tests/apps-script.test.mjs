@@ -123,6 +123,16 @@ test('overlapping same-ID attempt cannot write while the first request holds the
 test('consent version disagreement rejects new rows but preserves an exact accepted receipt',()=>{
  const h=harness();const first=h.run();h.settings.CONSENT_VERSION='enquiry-v2';h.now.value+=60000;assert.equal(h.run({submission_id:'22222222-2222-4222-8222-222222222222'}).code,'invalid');assert.equal(h.rows.length,1);assert.equal(h.run().receipt,first.receipt);
 });
+for(const [type,key] of [['purchase','PURCHASE_FORM_ENABLED'],['general','CONTACT_FORM_ENABLED'],['support','SUPPORT_FORM_ENABLED']])test(`${key} blocks only new matching enquiries and preserves receipts`,()=>{
+ const input=type==='purchase'?{}:nonPurchase(type),h=harness(),receipt=h.run(input);assert.equal(receipt.code,'success');h.settings[key]='false';assert.equal(h.run(input).receipt,receipt.receipt);
+ assert.equal(h.run({...input,submission_id:'22222222-2222-4222-8222-222222222222'}).code,'form_disabled');assert.equal(h.rows.length,1);
+ const other=harness({[key]:'false'});assert.equal(other.run(type==='general'?nonPurchase('support'):nonPurchase('general')).code,'success');
+});
+for(const type of ['purchase','general','support'])test(`maintenance rejects new ${type} enquiries but preserves accepted retry`,()=>{
+ const h=harness(),input=type==='purchase'?{}:nonPurchase(type),first=h.run(input);h.settings.SITE_MAINTENANCE='true';h.settings.MAINTENANCE_MESSAGE='Maintenance <please wait>';
+ assert.equal(h.run(input).receipt,first.receipt);const blocked=h.run({...input,submission_id:'22222222-2222-4222-8222-222222222222'});assert.equal(blocked.code,'maintenance');assert.equal(blocked.message,'Maintenance <please wait>');assert.equal(h.c.ncEscape_(blocked.message),'Maintenance &lt;please wait&gt;');assert.equal(h.rows.length,1);
+ h.settings.SITE_MAINTENANCE='false';h.now.value+=60000;assert.equal(h.run({...input,submission_id:'22222222-2222-4222-8222-222222222222'}).code,'success');
+});
 for(const [configuration_id,key,displayed_price] of [['512gb','STOCK_512GB','49900'],['1tb','STOCK_1TB','59900'],['backup','STOCK_BACKUP_PLUS','81900']])test(`${key} blocks new purchases but preserves accepted retries`,()=>{
  const h=harness(),fields={configuration_id,displayed_price},first=h.run(fields);assert.equal(first.code,'success');h.settings[key]='false';assert.equal(h.run(fields).receipt,first.receipt);
  assert.equal(h.run({...fields,submission_id:'22222222-2222-4222-8222-222222222222'}).code,'stock');assert.equal(h.rows.length,1);

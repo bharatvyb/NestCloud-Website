@@ -21,10 +21,24 @@ var NC_SETTING_SPECS_ = [
   ['MAX_TOTAL_ROWS','Enquiry capacity safety cap','Integer 1–50000','10000','Submission validation','Private'],
   ['STOCK_512GB','512 GB purchase availability','TRUE/FALSE','false','Purchase form/backend','Public'],
   ['STOCK_1TB','1 TB purchase availability','TRUE/FALSE','false','Purchase form/backend','Public'],
-  ['STOCK_BACKUP_PLUS','Backup Plus purchase availability','TRUE/FALSE','false','Purchase form/backend','Public']
+  ['STOCK_BACKUP_PLUS','Backup Plus purchase availability','TRUE/FALSE','false','Purchase form/backend','Public'],
+  ['PURCHASE_FORM_ENABLED','Purchase enquiry availability','TRUE/FALSE','true','Purchase form/backend','Public'],
+  ['CONTACT_FORM_ENABLED','General Contact availability','TRUE/FALSE','true','Contact form/backend','Public'],
+  ['SUPPORT_FORM_ENABLED','Technical Support availability','TRUE/FALSE','true','Support form/backend','Public'],
+  ['BANNER_ENABLED','Site-wide announcement visibility','TRUE/FALSE','false','Site banner','Public'],
+  ['BANNER_MESSAGE','Plain-text announcement','Text up to 500 characters','Welcome to NestCloud!','Site banner','Public'],
+  ['BANNER_LINK','Optional announcement destination','Blank or HTTPS URL without credentials','','Site banner','Public'],
+  ['SITE_MAINTENANCE','Block new enquiries during maintenance','TRUE/FALSE','false','Site notice and backend','Public'],
+  ['MAINTENANCE_MESSAGE','Plain-text maintenance notice','Text up to 500 characters','Website temporarily unavailable.','Site notice and backend','Public']
 ];
 var ncSettingsCache_ = null;
 function ncStockKey_(id) { return {'512gb':'STOCK_512GB','1tb':'STOCK_1TB',backup:'STOCK_BACKUP_PLUS'}[id]; }
+function ncFormKey_(type) { return {purchase:'PURCHASE_FORM_ENABLED',general:'CONTACT_FORM_ENABLED',support:'SUPPORT_FORM_ENABLED'}[type]; }
+function ncValidBannerLink_(value) {
+  if(value==='')return true;
+  var match=/^https:\/\/([a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?(?:\.[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?)+)(?::([0-9]{1,5}))?(?:[/?#][^\s\\<>"\x00-\x1f\x7f]*)?$/i.exec(value);
+  return value.length<=2048 && !!match && (!match[2] || (Number(match[2])>0 && Number(match[2])<=65535));
+}
 function ncSettingsSheet_() {
   var id=PropertiesService.getScriptProperties().getProperty('SPREADSHEET_ID');
   if(!id || !/^[a-zA-Z0-9_-]{20,200}$/.test(id))throw new Error('Settings bootstrap');
@@ -45,12 +59,14 @@ function ncReadSettings_(sheet) {
 }
 function ncSettingValue_(key,value) {
   var raw=String(value);
-  if(['ALLOW_SUBMISSIONS','NOTIFICATIONS_ENABLED','STOCK_512GB','STOCK_1TB','STOCK_BACKUP_PLUS'].indexOf(key)>=0) {
+  if(['ALLOW_SUBMISSIONS','NOTIFICATIONS_ENABLED','STOCK_512GB','STOCK_1TB','STOCK_BACKUP_PLUS','PURCHASE_FORM_ENABLED','CONTACT_FORM_ENABLED','SUPPORT_FORM_ENABLED','BANNER_ENABLED','SITE_MAINTENANCE'].indexOf(key)>=0) {
     if(!/^(true|false)$/i.test(raw))throw new Error('Settings boolean');
     return raw.toLowerCase();
   }
   if(key==='CONSENT_VERSION' && !/^[a-zA-Z0-9._-]{1,40}$/.test(raw))throw new Error('Settings consent');
   if(key==='RETURN_URL' && raw!==ncSafeReturn_(raw))throw new Error('Settings return URL');
+  if(key==='BANNER_LINK' && !ncValidBannerLink_(raw))throw new Error('Settings banner link');
+  if((key==='BANNER_MESSAGE' || key==='MAINTENANCE_MESSAGE') && (typeof value!=='string' || raw.length>500 || /[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]/.test(raw)))throw new Error('Settings message');
   if(key==='NOTIFICATION_START_UTC')ncNotificationStart_({getProperty:function(){return raw;}});
   if(key==='NOTIFICATION_EMAIL')ncNotificationConfig_({getProperty:function(k){return k==='SPREADSHEET_ID'?'validation-only-sheet-id':k==='NOTIFICATION_START_UTC'?'2000-01-01T00:00:00Z':raw;}});
   var bounds={EMAIL_COOLDOWN_SECONDS:[0,86400],GLOBAL_WINDOW_SECONDS:[60,86400],GLOBAL_MAX_SUBMISSIONS:[1,1000],MAX_TOTAL_ROWS:[1,50000]}[key];
@@ -85,6 +101,9 @@ function ncPublicSettings_(properties) {
   if(!consent || !/^[a-zA-Z0-9._-]{1,40}$/.test(consent))throw new Error('Settings consent');
   return {available:properties.getProperty('ALLOW_SUBMISSIONS')==='true',consentVersion:consent,
     returnUrl:ncSafeReturn_(properties.getProperty('RETURN_URL')),
+    forms:{purchase:properties.getProperty('PURCHASE_FORM_ENABLED')!=='false',general:properties.getProperty('CONTACT_FORM_ENABLED')!=='false',support:properties.getProperty('SUPPORT_FORM_ENABLED')!=='false'},
+    banner:{enabled:properties.getProperty('BANNER_ENABLED')==='true',message:properties.getProperty('BANNER_MESSAGE')??'Welcome to NestCloud!',link:properties.getProperty('BANNER_LINK')??''},
+    maintenance:{enabled:properties.getProperty('SITE_MAINTENANCE')==='true',message:properties.getProperty('MAINTENANCE_MESSAGE')??'Website temporarily unavailable.'},
     stock:{'512gb':properties.getProperty('STOCK_512GB')==='true','1tb':properties.getProperty('STOCK_1TB')==='true',backup:properties.getProperty('STOCK_BACKUP_PLUS')==='true'}};
 }
 /** Editor-only migration: retains every legacy property and never touches enquiry/outbox rows. */
@@ -233,6 +252,12 @@ function ncProcess_(event, services) {
       if (matches.length !== 1 || matches[0][3] !== digest) return ncError_('conflict');
       // Existing success precedes current pricing, cooldown and capacity checks.
       return ncSuccess_(matches[0][1], true);
+    }
+    if (services.properties.getProperty('SITE_MAINTENANCE')==='true') {
+      return {code:'maintenance',title:'NestCloud website maintenance',message:services.properties.getProperty('MAINTENANCE_MESSAGE')??'Website temporarily unavailable.'};
+    }
+    if (services.properties.getProperty(ncFormKey_(input.enquiry_type))==='false') {
+      return {code:'form_disabled',title:'This enquiry form is temporarily unavailable',message:'No new enquiry was saved. Please use the contact and support information on NestCloud.'};
     }
     if (input.consent_version !== config.consentVersion) return ncError_('invalid');
     var product = input.enquiry_type === 'purchase' ? NC_CATALOGUE_[input.configuration_id] : null;

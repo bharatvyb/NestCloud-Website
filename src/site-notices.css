@@ -1,0 +1,4 @@
+.site-notice{background:var(--pale);color:var(--ink);padding:12px 0;font-size:.95rem;line-height:1.5;overflow-wrap:anywhere;white-space:pre-line}
+.site-notice a{text-decoration:underline;text-underline-offset:3px}
+.site-notice p{margin:0}.site-notice p+p{margin-top:6px}
+.site-maintenance{border-bottom:1px solid var(--line,#dedede)}

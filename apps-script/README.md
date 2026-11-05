@@ -14,6 +14,12 @@ This migration targets an existing installation with its original outbox and cut
 
 `STOCK_512GB`, `STOCK_1TB`, `STOCK_BACKUP_PLUS` control **new purchase enquiries**, not prices, quantities, General Contact or Technical Support. The backend recovers an existing matching receipt before checking stock. Missing stock switches mean unavailable. Changes apply without code redeployment after initial backend/frontend activation.
 
+V1 completion adds `PURCHASE_FORM_ENABLED`, `CONTACT_FORM_ENABLED`, `SUPPORT_FORM_ENABLED` (TRUE), `BANNER_ENABLED` (FALSE), `BANNER_MESSAGE` (`Welcome to NestCloud!`), `BANNER_LINK` (blank), `SITE_MAINTENANCE` (FALSE), and `MAINTENANCE_MESSAGE` (`Website temporarily unavailable.`). The existing migration adds only these eight missing keys on the current 13-key Sheet and regenerates SettingsWiki. No legacy properties are deleted. Do not run it or update TEST code/deployment without the owner's new approval.
+
+The fixed public projection additionally exposes form booleans, plain-text banner content with an optional validated HTTPS link, and maintenance notice controls. New form/maintenance gates run **after accepted duplicate receipt lookup** and before new writes. Global ALLOW_SUBMISSIONS behavior and notification processing are unchanged. Site maintenance keeps contact/support information accessible, but blocks new enquiry submissions. One shared frontend loader refreshes settings roughly every 60 seconds while mounted; the backend remains authoritative. The existing version-6 endpoint remains compatible while its V1 update awaits approval. See SettingsWiki for each key and exact defaults.
+
+V1 upgrade sequencing matters: deploy the new compatible backend against the existing 13 settings **before** running the eight-key migration; the old version-6 reader rejects unknown keys. Do not roll version 6 back over a 21-key table without an approved settings snapshot restoration. See SettingsWiki's V1 upgrade/rollback notes. No live mutation or deployment is authorized by these instructions alone.
+
 Verification: `npm test`, `npx tsc --noEmit`, `npm run build`, `npm run check:export`. Mock tests do not prove live browser CORS, Google Sheet writes or email delivery. No DNS, Canva, custom domain or public website deployment is part of this feature.
 
 ## Historical Phase 2 design and setup (pre-migration only)
