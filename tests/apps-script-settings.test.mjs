@@ -35,7 +35,7 @@ test('missing optional switches default disabled; invalid notification config do
  assert.equal(h.c.ncConfig_(h.c.ncSettingsProperties_()).consentVersion,'enquiry-v1');assert.equal(h.c.ncPublicSettings_(h.c.ncSettingsProperties_()).stock['1tb'],false);assert.notEqual(h.c.getSetting_('NOTIFICATIONS_ENABLED',null),'true');assert.throws(()=>h.c.ncNotificationConfig_(h.c.ncSettingsProperties_()));
 });
 test('migration validates all candidates before writing, preserves cutover, rejects schema conflicts',()=>{
- for(const extra of [{CONSENT_VERSION:null},{NOTIFICATION_START_UTC:null},{NOTIFICATIONS_ENABLED:'true'},{EMAIL_COOLDOWN_SECONDS:'-1'},{RETURN_URL:'https://evil.invalid/'}]){const h=harness(extra);assert.throws(h.migrate);assert.equal(h.tabs.MasterSettings,undefined)}
+ for(const extra of [{CONSENT_VERSION:null},{NOTIFICATION_START_UTC:null},{NOTIFICATIONS_ENABLED:'true'},{NOTIFICATIONS_ENABLED:'TRUE'},{NOTIFICATIONS_ENABLED:'yes'},{ALLOW_SUBMISSIONS:'TRUE'},{EMAIL_COOLDOWN_SECONDS:'-1'},{RETURN_URL:'https://evil.invalid/'}]){const h=harness(extra);assert.throws(h.migrate);assert.equal(h.tabs.MasterSettings,undefined)}
  const h=harness();h.tabs.SettingsWiki=h.make([['Existing unrelated data']]);assert.throws(h.migrate);assert.equal(h.tabs.MasterSettings,undefined);
 });
 test('reader rejects duplicate/unknown keys, invalid types and ranges without falling back to legacy',()=>{

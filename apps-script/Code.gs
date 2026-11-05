@@ -90,7 +90,8 @@ function ncPublicSettings_(properties) {
 /** Editor-only migration: retains every legacy property and never touches enquiry/outbox rows. */
 function migrateMasterSettings_() {
   var properties=PropertiesService.getScriptProperties();
-  if(properties.getProperty('NOTIFICATIONS_ENABLED')==='true')throw new Error('Disable notifications before migration');
+  var notificationSwitch=properties.getProperty('NOTIFICATIONS_ENABLED');
+  if(notificationSwitch!==null && notificationSwitch!=='false')throw new Error('Set legacy NOTIFICATIONS_ENABLED to literal false before migration');
   var lock=LockService.getScriptLock();lock.waitLock(10000);
   try {
     var book=SpreadsheetApp.openById(properties.getProperty('SPREADSHEET_ID'));
@@ -99,6 +100,9 @@ function migrateMasterSettings_() {
     NC_SETTING_SPECS_.forEach(function(spec){
       if(Object.prototype.hasOwnProperty.call(existing,spec[0])){existing[spec[0]]=ncSettingValue_(spec[0],existing[spec[0]]);return;} // Reruns preserve operator edits.
       var value=properties.getProperty(spec[0]);
+      // Legacy switches only accepted lowercase literals. Never turn an old
+      // disabled/malformed value such as TRUE into newly enabled intake.
+      if(spec[0]==='ALLOW_SUBMISSIONS' && value!==null && value!=='true' && value!=='false')throw new Error('Invalid legacy intake switch');
       if(value===null)value=spec[0].indexOf('STOCK_')===0?'true':spec[3];
       if(value===null)throw new Error('Required legacy setting missing: '+spec[0]);
       rows.push([spec[0],ncSettingValue_(spec[0],value)]);
