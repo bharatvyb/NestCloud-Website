@@ -1,5 +1,7 @@
 # MasterSettings verification
 
+The initial migration results below are historical. V1 completion results are recorded separately at the end; they do not imply publication of the draft frontend.
+
 ## Automated verification
 
 `npm test`: 240 tests passed. `npx tsc --noEmit`, `npm run build`, `npm run check:export`, and `git diff --check` passed. The build exported and validated 17 pages. GitHub PR #6 validation passed for implementation `44bf37b`, layout follow-up `127cc8c`, and final legacy-switch guard `f0920b6`.
@@ -25,3 +27,29 @@ MOCK — Backend stock rejection, accepted duplicate receipts after stock disabl
 Follow SettingsWiki's rollback order: disable notifications in both stores, restore the prior reviewed saved project code AND existing deployment version, reconcile any changed settings against retained properties, and roll back the frontend integration if it has been published later. Never delete enquiry/outbox history or reset the cutover.
 
 PR #6 remains draft and stacked on unmerged PR #5. Public website activation requires a separate review/approval. Retained properties must not be removed until the owner explicitly approves cleanup. Notification delivery behavior is regression-tested here; no new live email is sent to demonstrate settings migration. Production publication remains blocked pending separately approved hosting decisions.
+
+## V1 completion — approved TEST verification, 5 November 2026
+
+PASS — All 257 automated tests, explicit TypeScript check, production build, 17-page static export validation and diff checks passed. GitHub Actions passed for code commit `a386ae7`. New coverage verifies per-form switches, accepted retries, maintenance enforcement, banner text/link safety, shared initial requests, the 60-second refresh timer, cleanup, overlapping-request cancellation, failure/recovery and existing notification regressions.
+
+PASS — With explicit TEST-only owner approval, the SAME project and Web App were updated to version 7 (`TEST V1 MasterSettings — PR #6 a386ae7; notifications disabled`). The reviewed source was deployed before adding settings, avoiding the older reader's unknown-key rejection. The unchanged endpoint worked against the original 13-key table before migration. The existing migration then added exactly eight keys. Independent Sheet reads verified 21 settings and a SettingsWiki reference covering all 21 plus SPREADSHEET_ID. Temporary editor wrappers were removed; saved source exactly matched reviewed code.
+
+PASS — Anonymous public GETs returned only the fixed `available`, `consentVersion`, `returnUrl`, `forms`, `banner`, `maintenance`, `stock` projection. No notification recipient, private spreadsheet ID, cutover, limits, enquiry rows or outbox metadata appeared. Settings edits were visible through this endpoint without redeploying code.
+
+PASS — The LOCAL-ONLY draft frontend, backed by the live TEST Google endpoint, remained compatible with the previous public projection. After form switches were changed to FALSE and banner enabled in the Sheet, all three already-open form views disabled submission and displayed the new banner through their automatic refresh. The result was independently observed 72 seconds after the Sheet change, with no page reload or redeployment. Text containing `<plain text>` remained literal text; the optional HTTPS link was correct. Purchase and Contact were also observed re-enabling independently while the remaining disabled form stayed blocked; all three forms recovered after final restoration.
+
+PASS — With all three form switches TRUE and SITE_MAINTENANCE TRUE, the live API exposed maintenance and all three local form views disabled submission. The configured `<please wait>` text rendered literally. Contact, Technical Support and existing device-support links stayed accessible. A malformed temporary Support test cell also caused public settings to return only `{available:false}` and disabled submissions; it was corrected and the entire eight-row test block revalidated before continuing. No code defect or data loss was inferred from that invalid configuration.
+
+PASS — Final independent Sheet/API/UI checks confirmed:
+
+- PURCHASE_FORM_ENABLED, CONTACT_FORM_ENABLED, SUPPORT_FORM_ENABLED: TRUE.
+- STOCK_512GB, STOCK_1TB, STOCK_BACKUP_PLUS: TRUE.
+- SITE_MAINTENANCE, BANNER_ENABLED, NOTIFICATIONS_ENABLED: FALSE.
+- BANNER_MESSAGE: `Welcome to NestCloud!`; BANNER_LINK: blank.
+- MAINTENANCE_MESSAGE: `Website temporarily unavailable.`
+- All original 13 settings, seven legacy properties, eligibility cutover and single worker trigger preserved. Initial worker verification reported disabled with zero sends.
+- All four original data tabs matched their independently copied pre-update contents exactly: 11 Purchase, 8 General Contact, 4 Support and 14 Sent outbox records. No new enquiries or emails were created.
+
+MOCK — New-enquiry POST rejection/acceptance, exact accepted-receipt retries under disabled forms/maintenance, rate/price behavior, unsafe links and notification concurrency/recovery were exercised through automated fixtures only. No new live POST was permitted or performed. Browser evidence validates the local draft frontend against Google TEST, not publication of PR #6 to GitHub Pages.
+
+Remaining gates: neither PR is merged. Public frontend publication is unapproved and unchanged. DNS, Canva and nestcloud.in are untouched. No legacy property cleanup is approved. Full rollback over a 21-key table must follow SettingsWiki's compatibility warning; do not blindly reactivate version 6. No remaining V1 implementation blocker was reproduced in this controlled verification.
