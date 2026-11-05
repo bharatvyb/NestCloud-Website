@@ -17,7 +17,7 @@ function harness(overrides={}) {
   const store={
     entries(){if(flags.readFail)throw Error('private storage error');return rows.map(r=>({...r}));},
     append(record){assert.ok(flags.locked);if(flags.appendFail)throw Error('private append error');rows.push({...record,row:rows.length+2});if(flags.persistAppendFail)throw Error('acknowledgement lost');},
-    write(record){assert.ok(flags.locked);if(flags.writeFail===record.status)throw Error('private write error');const i=rows.findIndex(r=>r.row===record.row);assert.ok(i>=0);rows[i]={...record};if(flags.persistWriteFail===record.status)throw Error('acknowledgement lost');},
+    write(record){assert.ok(flags.locked);if(flags.writeFail===record.status || flags.writeFailError===record.error)throw Error('private write error');const i=rows.findIndex(r=>r.row===record.row);assert.ok(i>=0);rows[i]={...record};if(flags.persistWriteFail===record.status || flags.persistWriteFailError===record.error)throw Error('acknowledgement lost');},
     sources(){if(flags.sourceFail || (++flags.sourceReads===flags.failSourceRead))throw Error('private source error');return sources.map(r=>r.slice());}
   };
   flags.sourceReads=0;
@@ -123,7 +123,7 @@ test('failure to record a claim prevents MailApp from being called',()=>{
   const h=harness();h.enqueue();h.flags.writeFail='Sending';assert.equal(h.run().status,'storage_unavailable');assert.equal(h.mails.length,0);assert.equal(h.rows[0].status,'Pending');
 });
 test('interrupted workers expire to Uncertain, not an automatic retry',()=>{
-  const h=harness();h.enqueue();const claim=h.c.ncClaimNotification_(h.services,h.c.ncNotificationConfig_(h.properties));assert.equal(claim.status,'Sending');h.run();assert.equal(h.mails.length,0);h.clock.now+=h.c.NC_NOTIFICATION_LEASE_MS_+1;h.run();assert.equal(h.rows[0].status,'Uncertain');assert.equal(h.rows[0].error,'worker_interrupted');assert.equal(h.mails.length,0);
+  const h=harness();h.enqueue();const config=h.c.ncNotificationConfig_(h.properties),claim=h.c.ncClaimNotification_(h.services,config);assert.equal(claim.status,'Sending');assert.equal(h.c.ncNotificationCanSend_(h.services,config,claim),true);h.run();assert.equal(h.mails.length,0);h.clock.now+=h.c.NC_NOTIFICATION_LEASE_MS_+1;h.run();assert.equal(h.rows[0].status,'Uncertain');assert.equal(h.rows[0].error,'worker_interrupted');assert.equal(h.mails.length,0);
 });
 test('expired / superseded claims are fenced before MailApp and before status writes',()=>{
   const h=harness();h.enqueue();const claim=h.c.ncClaimNotification_(h.services,h.c.ncNotificationConfig_(h.properties));h.clock.now+=h.c.NC_NOTIFICATION_LEASE_MS_+1;assert.equal(h.c.ncNotificationCanSend_(h.services,h.c.ncNotificationConfig_(h.properties),claim),false);
@@ -198,8 +198,18 @@ test('actual customer service adapter queues only eligible saved rows and shares
 test('busy completion after MailApp acceptance holds the claim instead of resending',()=>{
   const h=harness();h.enqueue();h.flags.onSend=()=>{h.flags.busy=true;};assert.equal(h.run().status,'outcome_unrecorded');assert.equal(h.rows[0].status,'Sending');h.flags.busy=false;h.clock.now+=h.c.NC_NOTIFICATION_LEASE_MS_+1;h.run();assert.equal(h.rows[0].status,'Uncertain');assert.equal(h.mails.length,1);
 });
+test('completion waits through a normal concurrent customer write and records acceptance once',()=>{
+  const h=harness();h.enqueue();const original=h.services.lock;h.flags.onSend=()=>{h.flags.busy=true;};let waited=false;
+  h.services.lock=()=>{const lock=original();return {...lock,tryLock(ms){if(h.flags.busy && ms===10000){waited=true;h.clock.now+=3000;h.flags.busy=false;}return lock.tryLock();}};};
+  assert.equal(h.run().accepted,1);assert.ok(waited);assert.equal(h.rows[0].status,'Sent');assert.equal(h.mails.length,1);h.run();assert.equal(h.mails.length,1);
+});
+test('pre-send contention can record its safe Pending state after the customer lock releases',()=>{
+  const h=harness();h.enqueue();const original=h.services.lock;h.services.quota=()=>{h.flags.busy=true;return 100;};
+  h.services.lock=()=>{const lock=original();return {...lock,tryLock(ms){if(h.flags.busy && ms===10000){h.clock.now+=3000;h.flags.busy=false;}return lock.tryLock();}};};
+  h.run();assert.equal(h.rows[0].status,'Pending');assert.equal(h.rows[0].error,'pre_send_busy');assert.equal(h.mails.length,0);h.services.quota=()=>100;h.clock.now=Date.parse(h.rows[0].nextRetry);assert.equal(h.run().accepted,1);assert.equal(h.mails.length,1);
+});
 test('worker fences a lease that expires during preflight, before calling MailApp',()=>{
-  const h=harness();h.enqueue();h.services.quota=()=>{h.clock.now+=h.c.NC_NOTIFICATION_LEASE_MS_+1;return 100;};assert.equal(h.run().status,'claim_not_current');assert.equal(h.mails.length,0);h.run();assert.equal(h.rows[0].status,'Uncertain');assert.equal(h.mails.length,0);
+  const h=harness();h.enqueue();h.services.quota=()=>{h.clock.now+=h.c.NC_NOTIFICATION_LEASE_MS_+1;return 100;};assert.equal(h.run().status,'claim_not_current');assert.equal(h.mails.length,0);h.services.quota=()=>100;h.run();assert.equal(h.rows[0].status,'Sent');assert.equal(h.rows[0].attempts,2);assert.equal(h.mails.length,1);
 });
 test('quota recovery sends exactly once after the recorded delay',()=>{
   const h=harness();h.enqueue();h.flags.quota=0;h.run();h.flags.quota=1;h.run();assert.equal(h.mails.length,0);h.clock.now=Date.parse(h.rows[0].nextRetry);h.run();h.run();assert.equal(h.rows[0].status,'Sent');assert.equal(h.mails.length,1);
@@ -233,13 +243,35 @@ test('repeated post-claim source read failures exhaust the existing bounded retr
   assert.equal(h.rows[0].status,'Failed');h.flags.failSourceRead=0;h.clock.now+=86400000;h.run();assert.equal(h.mails.length,0);
 });
 test('expired Sending becomes Uncertain even when source reconciliation fails',()=>{
-  const h=harness();h.enqueue();h.c.ncClaimNotification_(h.services,h.c.ncNotificationConfig_(h.properties));h.clock.now+=h.c.NC_NOTIFICATION_LEASE_MS_+1;h.sources[0][1]='bad receipt';assert.equal(h.run().status,'source_corrupt');assert.equal(h.rows[0].status,'Uncertain');assert.equal(h.rows[0].error,'worker_interrupted');h.sources[0]=saved();h.run();assert.equal(h.mails.length,0);assert.equal(h.rows[0].status,'Uncertain');
+  const h=harness();h.enqueue();const config=h.c.ncNotificationConfig_(h.properties),claim=h.c.ncClaimNotification_(h.services,config);h.c.ncNotificationCanSend_(h.services,config,claim);h.clock.now+=h.c.NC_NOTIFICATION_LEASE_MS_+1;h.sources[0][1]='bad receipt';assert.equal(h.run().status,'source_corrupt');assert.equal(h.rows[0].status,'Uncertain');assert.equal(h.rows[0].error,'worker_interrupted');h.sources[0]=saved();h.run();assert.equal(h.mails.length,0);assert.equal(h.rows[0].status,'Uncertain');
 });
 test('source failure with busy completion reports unrecorded outcome, not a completed retry',()=>{
-  const h=harness();h.enqueue();h.services.quota=()=>{h.sources.length=0;h.flags.busy=true;return 100;};assert.equal(h.run().status,'outcome_unrecorded');assert.equal(h.rows[0].status,'Sending');assert.equal(h.mails.length,0);h.flags.busy=false;h.clock.now+=h.c.NC_NOTIFICATION_LEASE_MS_+1;h.run();assert.equal(h.rows[0].status,'Uncertain');
+  const h=harness();h.enqueue();h.services.quota=()=>{h.sources.length=0;h.flags.busy=true;return 100;};assert.equal(h.run().status,'outcome_unrecorded');assert.equal(h.rows[0].status,'Sending');assert.equal(h.mails.length,0);h.flags.busy=false;h.services.quota=()=>100;h.clock.now+=h.c.NC_NOTIFICATION_LEASE_MS_+1;h.run();assert.equal(h.rows[0].status,'Failed');assert.equal(h.rows[0].error,'source_missing');assert.equal(h.mails.length,0);
 });
 test('source failure with failed status persistence holds the lease without sending',()=>{
-  const h=harness();h.enqueue();h.sources.length=0;h.flags.writeFail='Failed';assert.equal(h.run().status,'storage_unavailable');assert.equal(h.rows[0].status,'Sending');assert.equal(h.mails.length,0);h.flags.writeFail=null;h.clock.now+=h.c.NC_NOTIFICATION_LEASE_MS_+1;h.run();assert.equal(h.rows[0].status,'Uncertain');
+  const h=harness();h.enqueue();h.sources.length=0;h.flags.writeFail='Failed';assert.equal(h.run().status,'storage_unavailable');assert.equal(h.rows[0].status,'Sending');assert.equal(h.mails.length,0);h.flags.writeFail=null;h.clock.now+=h.c.NC_NOTIFICATION_LEASE_MS_+1;h.run();assert.equal(h.rows[0].status,'Failed');assert.equal(h.rows[0].error,'source_missing');assert.equal(h.mails.length,0);
+});
+test('busy pre-send lock defers safely and an expired pre-send lease recovers once',()=>{
+  const h=harness();h.enqueue();const config=h.c.ncNotificationConfig_(h.properties);h.services.quota=()=>{h.flags.busy=true;return 100;};assert.equal(h.run().status,'pre_send_deferred');assert.equal(h.rows[0].error,'pre_send');assert.equal(h.mails.length,0);h.flags.busy=false;h.services.quota=()=>100;h.run();assert.equal(h.mails.length,0);h.clock.now+=h.c.NC_NOTIFICATION_LEASE_MS_+1;h.run();assert.equal(h.rows[0].status,'Sent');assert.equal(h.rows[0].attempts,2);h.run();assert.equal(h.mails.length,1);
+  assert.equal(h.c.ncNotificationCanSend_(h.services,config,{id:uuid(1),claim:'obsolete'}),false);
+});
+test('transient pre-send contention returns Pending with the existing backoff',()=>{
+  const h=harness();h.enqueue();const original=h.services.lock;let calls=0;h.services.lock=()=>{const lock=original();return {...lock,tryLock(){if(++calls===2)return false;return lock.tryLock();}};};h.run();assert.equal(h.rows[0].status,'Pending');assert.equal(h.rows[0].error,'pre_send_busy');assert.equal(Date.parse(h.rows[0].nextRetry)-h.clock.now,60000);assert.equal(h.mails.length,0);h.clock.now=Date.parse(h.rows[0].nextRetry);h.run();assert.equal(h.rows[0].status,'Sent');assert.equal(h.mails.length,1);
+});
+test('MailApp can only be entered after a durable send_started boundary',()=>{
+  const h=harness();h.enqueue();h.flags.onSend=()=>{assert.equal(h.rows[0].error,'send_started');assert.ok(h.rows[0].claim);};assert.equal(h.run().accepted,1);assert.equal(h.mails.length,1);
+});
+for(const flag of ['writeFailError','persistWriteFailError'])test(`send-boundary ${flag} never calls MailApp or guesses acceptance`,()=>{
+  const h=harness();h.enqueue();h.flags[flag]='send_started';assert.equal(h.run().status,'storage_unavailable');assert.equal(h.mails.length,0);h.flags[flag]=null;h.clock.now+=h.c.NC_NOTIFICATION_LEASE_MS_+1;h.run();assert.equal(h.rows[0].status,flag==='persistWriteFailError'?'Uncertain':'Sent');assert.equal(h.mails.length,flag==='persistWriteFailError'?0:1);
+});
+test('legacy Sending claims with no phase remain Uncertain and never auto-retry',()=>{
+  const h=harness();h.enqueue();h.c.ncClaimNotification_(h.services,h.c.ncNotificationConfig_(h.properties));h.rows[0].error='';h.clock.now+=h.c.NC_NOTIFICATION_LEASE_MS_+1;h.run();assert.equal(h.rows[0].status,'Uncertain');assert.equal(h.mails.length,0);
+});
+test('expired pre-send recovery preserves five-attempt limit and fences the old token',()=>{
+  const h=harness();h.enqueue();const config=h.c.ncNotificationConfig_(h.properties);let first;for(let i=0;i<5;i++){const claim=h.c.ncClaimNotification_(h.services,config);first??=claim;assert.ok(claim);h.clock.now+=h.c.NC_NOTIFICATION_LEASE_MS_+1;}assert.equal(h.c.ncClaimNotification_(h.services,config),null);assert.equal(h.rows[0].status,'Failed');assert.equal(h.rows[0].attempts,5);assert.equal(h.c.ncNotificationCanSend_(h.services,config,first),false);assert.equal(h.mails.length,0);
+});
+test('reclaimed pre-send lease fences the old worker and permits only one send boundary',()=>{
+  const h=harness();h.enqueue();const config=h.c.ncNotificationConfig_(h.properties),old=h.c.ncClaimNotification_(h.services,config);h.clock.now+=h.c.NC_NOTIFICATION_LEASE_MS_+1;const current=h.c.ncClaimNotification_(h.services,config);assert.notEqual(current.claim,old.claim);assert.equal(h.c.ncNotificationCanSend_(h.services,config,old),false);assert.equal(h.c.ncFinishNotification_(h.services,config,old,'Sent',''),false);assert.equal(h.c.ncNotificationCanSend_(h.services,config,current),true);assert.equal(h.c.ncNotificationCanSend_(h.services,config,current),false);assert.equal(h.mails.length,0);
 });
 test('actual Sheet adapter distinguishes missing/corrupt tabs from transient read errors',()=>{
   for(const fault of ['missing','schema','read']){
