@@ -5,7 +5,7 @@ export const configs = [
 ] as const;
 export type Configuration = typeof configs[number];
 export const priceDisclosure = 'GST included. Full payment upfront. No additional Razorpay processing fee.';
-// Shipping, invoicing and commercial terms still require owner approval.
+// Live activation still requires shipping verification, invoicing review and release approval.
 export const liveCheckoutApproved = false;
 export const formatPrice = (price:number) => new Intl.NumberFormat('en-IN',{style:'currency',currency:'INR',maximumFractionDigits:0}).format(price);
 export const navigation = [{label:'NestCloud Home',href:'/family'},{label:'NestCloud OS',href:'/nestcloud-os'},{label:'Why NestCloud',href:'/why-nestcloud'},{label:'How It Works',href:'/how-it-works'},{label:'Support',href:'/support'}];

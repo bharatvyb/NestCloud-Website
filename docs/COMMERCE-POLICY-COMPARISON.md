@@ -1,5 +1,7 @@
 # Published policy comparison — full-payment transition proposal
 
+Subsequent owner decision: retain estimated 10 working days from successful FULL payment and retain disclosed applicable shipping (not blanket free shipping). Implemented only in PR #7 and the authorized Test store. See [the current readiness report](PAYMENT-READINESS-REVIEW.md); this comparison preserves the evidence and pre-approval proposal below, not a new request to approve already-decided terms.
+
 Reviewed 6 November 2026. **Proposal only; no Live Razorpay, Canva, Pages or Google changes.** The existing Live Webstore remains Active and unchanged at the owner's instruction. Continue only in Test Mode and draft PR #7.
 
 ## Sources and verification

@@ -42,7 +42,7 @@
   {
     "path": "/policies",
     "title": "NestCloud — Policies & purchase information",
-    "description": "Review NestCloud policies and proposed full-payment purchase terms. Draft commercial terms require owner approval before live sales."
+    "description": "Review NestCloud policies and proposed full-payment purchase terms. Full-payment revisions await separate release approval."
   },
   {
     "path": "/policies/tc",
@@ -57,7 +57,7 @@
   {
     "path": "/policies/shipping--delivery",
     "title": "Shipping & Delivery Policy — NestCloud",
-    "description": "Draft India shipping and delivery terms. Shipping charges and dispatch commitments await owner approval."
+    "description": "Draft India shipping and delivery terms. Applicable shipping charges are disclosed before payment; estimated dispatch within 10 working days from successful full payment."
   },
   {
     "path": "/policies/cancellation--refund",
@@ -72,7 +72,7 @@
   {
     "path": "/policies/sla",
     "title": "Service Level Agreement — NestCloud",
-    "description": "Review proposed NestCloud service terms with full-payment purchase wording; owner approval pending."
+    "description": "Review proposed NestCloud service terms with full-payment purchase wording; full-payment revision awaiting publication."
   },
   {
     "path": "/purchase-enquiry",

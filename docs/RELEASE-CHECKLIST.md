@@ -1,5 +1,7 @@
 # Final release checklist — 6 November 2026 (Asia/Kolkata)
 
+PR #7 adds payment gates and new catalogue prices. Use [the complete payment release checklist](PAYMENT-READINESS-REVIEW.md#release-checklist--all-remain-separately-gated) alongside this PR #5/#6 baseline. Do not release the new frontend against TEST backend version 7 or treat the historical 21-key/no-migration note below as the five-key checkout upgrade procedure.
+
 ## Reviewed facts
 
 - PR #5: draft `fix/notification-preflight-contention` → `main`, current validation passing, mergeable at review time.

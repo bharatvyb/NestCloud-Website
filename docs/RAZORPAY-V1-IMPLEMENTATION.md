@@ -1,5 +1,7 @@
 # NestCloud Home — PR #7 implementation and release gates
 
+Current review: [payment readiness, approved full-payment revisions, current Test URLs and final checklist](PAYMENT-READINESS-REVIEW.md). The evidence below is the earlier baseline: Test product IDs rotated on republish, dispatch terms are now approved, and the full-payment revisions now retain applicable original clauses. No Live release is authorized.
+
 ## Current scope
 
 Only `feature/razorpay-commerce`, stacked on PR #6 at c6349ae. PR #5 and PR #6 remain unchanged and unmerged. No main push, Pages deployment, Google code/settings mutation, live Razorpay edit, real charge, DNS or Canva change.

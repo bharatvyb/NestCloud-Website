@@ -2,6 +2,21 @@
 
 ## PR #7 checkout extension (prepared, not deployed)
 
+### Staff payment and availability operations — proposed V1 process
+
+MasterSettings controls the website/enquiry backend, **not Razorpay's offsite checkout**. No automatic provider synchronization is implemented or verified. The following paired operational process needs owner acceptance before production use; do not edit Live resources under a TEST-only approval.
+
+- Disable one configuration: set that Razorpay product's stock to zero first, independently open its existing direct URL and verify no purchase control remains, then set the matching `STOCK_*` FALSE. Also consider already-open carts/in-flight payments: a fresh-page check does not prove they are cancelled. Record and reconcile any payment already in progress.
+- Disable every purchase: deactivate the specific Razorpay store (or zero all of its products) and verify direct URLs are blocked; then set `PURCHASE_FORM_ENABLED=FALSE`, `CHECKOUT_ENABLED=FALSE` and/or `SITE_MAINTENANCE=TRUE` as appropriate. A website-only switch is not a complete kill switch. Do not deactivate another brand's store or turn off Contact/Support unnecessarily.
+- Restore: verify provider mode, current product IDs, exact GST-inclusive prices, shipping/serviceability, policy references and availability first. Reactivate/replenish only approved provider products, then restore the matching website flags. Retain notifications FALSE and existing unrelated settings.
+- After **every Webstore republish**, independently recheck all three product URLs and update approved `CHECKOUT_*_URL` values if IDs changed. The TEST republish regenerated `li_*` IDs; all three previous URLs returned product-not-found. Never silently replace an unavailable product with a different configuration or browser-controlled amount.
+- Payment verification: Razorpay Dashboard → Transactions → Payments; use the correct Test/Live mode. Check payment ID, Captured status, currency, amount (approved product plus disclosed shipping), selected configuration/quantity, linked order, customer/delivery details and refund state. Reconcile the order as paid and the correct amount captured before fulfilment. The observed Attempted Test order displayed its value under “Total Amount Paid” even though payment Failed: never trust that amount label alone. A URL parameter, screenshot, enquiry receipt or browser success page is not sufficient. Native provider records remain the order system; no second order spreadsheet was added.
+- Created, Failed, Cancelled, uncertain or unmatched payments are not paid orders. Look up the original payment/order IDs before any deliberate retry. Check all attempts for capture before resending a payment request. Never auto-refund, capture, resend or fulfil based only on an error popup.
+- Duplicate-click protection in Home-page checkout entry reduces accidental navigation; it does not guarantee that separate hosted visits cannot create duplicate paid orders. Staff must reconcile duplicate customer/order attempts and obtain authorization before any refund. Cross-order deduplication and actual successful provider confirmation remain release gates.
+- Checkout must disclose shipping and final payable total before confirmation. The current TEST editor exposes no verified shipping tariff control; only one earlier zero-fee address scenario was confirmed. Do not assume nationwide free shipping, global PIN coverage or nonzero-charge calculation.
+
+The generated Sheet SettingsWiki descriptions now include the website/provider boundary and basic staff guidance. Those source changes are **not deployed**: refreshing the actual Sheet wiki requires a separately approved compatible Apps Script update/migration; no Google resources were modified. See [the payment-readiness report](PAYMENT-READINESS-REVIEW.md) for evidence, blockers and release gates.
+
 Five additional public settings bring the application table to 26 keys. The existing shared reader, migration and generated Sheet SettingsWiki are reused. Deploy compatible backend code before adding these keys: older strict readers reject unknown keys. No Sheet migration or deployment is authorized by the code change.
 
 | Key | Description | Allowed values | Default | Used in | Visibility | Redeployment |

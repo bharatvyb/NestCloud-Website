@@ -73,8 +73,20 @@ for(const [id,price] of [['512gb',60499],['1tb',72499],['backup',99499]])test(`$
 for(const gate of ['stock','maintenance','global','form','checkout','live'])test(`${gate} blocks hosted checkout entry`,async()=>{
  settings.checkout={enabled:true,mode:'test',urls:checkoutUrls};if(gate==='stock')settings.stock.backup=false;if(gate==='maintenance')settings.maintenance.enabled=true;if(gate==='global')settings.available=false;if(gate==='form')settings.forms.purchase=false;if(gate==='checkout')settings.checkout.enabled=false;if(gate==='live')settings.checkout.mode='live';await render(React.createElement(UI.CheckoutPanel,{configuration:UI.configs[2]}));assert.equal(container.querySelector('.checkout-panel a.button'),null);
 });
+for(const id of ['512gb','1tb','backup'])test(`${id} stock FALSE blocks only that configuration checkout entry`,async()=>{
+ settings.checkout={enabled:true,mode:'test',urls:checkoutUrls};settings.stock[id]=false;
+ await render(React.createElement(UI.CheckoutPanel,{configuration:UI.configs.find(c=>c.id===id)}));assert.equal(container.querySelector('a.button'),null);
+ const other=UI.configs.find(c=>c.id!==id);await render(React.createElement(UI.CheckoutPanel,{configuration:other}));assert.equal(container.querySelector('a.button').href,checkoutUrls[other.id]);
+});
 test('duplicate checkout clicks are blocked; Back/failed/cancelled journey permits a deliberate retry without claiming payment',async()=>{
  settings.checkout={enabled:true,mode:'test',urls:checkoutUrls};await render(React.createElement(UI.CheckoutPanel,{configuration:UI.configs[0]}));const attempts=[];container.addEventListener('click',event=>{attempts.push(!event.defaultPrevented);event.preventDefault()});let link=container.querySelector('a.button');await act(async()=>{link.dispatchEvent(new window.MouseEvent('click',{bubbles:true,cancelable:true}));link.dispatchEvent(new window.MouseEvent('click',{bubbles:true,cancelable:true}))});assert.deepEqual(attempts,[true,false]);assert.equal(link.getAttribute('href'),checkoutUrls['512gb'],'first native navigation retains its URL');await act(async()=>window.dispatchEvent(new window.Event('pageshow')));link=container.querySelector('a.button');assert.equal(link.getAttribute('aria-disabled'),null);assert.match(container.textContent,/failed or cancelled/);assert.match(container.textContent,/does not confirm payment/);assert.doesNotMatch(container.textContent,/payment successful|order confirmed/i);
+});
+test('untrusted payment return parameters never mark an order paid',async()=>{
+ settings.checkout={enabled:true,mode:'test',urls:checkoutUrls};window.history.replaceState(null,'','?configuration=1tb&razorpay_payment_id=pay_fake&status=success');
+ await render(React.createElement(UI.CheckoutPanel,{configuration:UI.configs[1]}));
+ assert.doesNotMatch(container.textContent,/payment successful|order confirmed|successfully paid/i);
+ assert.match(container.textContent,/Returning to NestCloud does not confirm payment/);
+ assert.equal(container.querySelector('a.button').href,checkoutUrls['1tb']);
 });
 test('unsafe/mutable-amount checkout URLs and malformed mode fail closed',async()=>{
  for(const url of ['https://evil.invalid/pay','http://pages.razorpay.com/stores/st_A/product/li_B','https://pages.razorpay.com/stores/st_A/product/li_B?amount=1','https://user:pass@pages.razorpay.com/stores/st_A/product/li_B','javascript:alert(1)']){assert.equal(UI.validCheckoutUrl(url),false);globalThis.fetch=async()=>({ok:true,json:async()=>({...defaults(),checkout:{enabled:true,mode:'test',urls:{...checkoutUrls,'512gb':url}}})});await assert.rejects(()=>UI.loadPublicEnquirySettings(endpoint,new AbortController().signal))}
