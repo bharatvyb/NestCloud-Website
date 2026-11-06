@@ -31,7 +31,7 @@ function harness(overrides={}) {
   const locked=fn=>{const lock=services.lock();assert.ok(lock.tryLock());try{return fn();}finally{lock.releaseLock();}};
   const enqueue=(row=saved())=>{sources.push(row.slice());return locked(()=>c.ncEnsureNotifications_(store,[row],services));};
   function customer(extra={}) {
-    const f={submission_id:uuid(1),enquiry_type:'purchase',full_name:'Synthetic Customer',email:'synthetic@example.invalid',mobile:'9000000000',delivery_pin:'560001',message:'Synthetic message',consent:'yes',consent_version:'enquiry-test-v1',configuration_id:'backup',displayed_price:'81900',...extra};
+    const f={submission_id:uuid(1),enquiry_type:'purchase',full_name:'Synthetic Customer',email:'synthetic@example.invalid',mobile:'9000000000',delivery_pin:'560001',message:'Synthetic message',consent:'yes',consent_version:'enquiry-test-v1',configuration_id:'backup',displayed_price:'99499',...extra};
     const body=new URLSearchParams(f).toString();const event={contentLength:body.length,postData:{type:'application/x-www-form-urlencoded'},parameters:Object.fromEntries(Object.entries(f).map(([k,v])=>[k,[v]]))};
     const customerServices={...services,hash:value=>createHash('sha256').update(value).digest('hex'),
       sheets:()=>({metadata:()=>sources.map(row=>row.slice(0,5)),append(tab,values){assert.ok(flags.locked);sources.push(Array.from(values));flags.onEnquiryAppend?.();}}),

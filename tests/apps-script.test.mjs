@@ -16,10 +16,10 @@ function harness(overrides={}){
   flush(){flags.flush++;if(flags.flushFail)throw Error('Flush failed')}};
  return {c,settings,services,rows,flags,now,run:fields=>c.ncProcess_(event(fields),services)};
 }
-function fields(extra={}){return {submission_id:id,enquiry_type:'purchase',full_name:'Test Customer',email:'test@example.invalid',mobile:'+91 98765 43210',delivery_pin:'560001',message:'',consent:'yes',consent_version:'enquiry-v1',configuration_id:'1tb',displayed_price:'59900',website:'',...extra}}
+function fields(extra={}){return {submission_id:id,enquiry_type:'purchase',full_name:'Test Customer',email:'test@example.invalid',mobile:'+91 98765 43210',delivery_pin:'560001',message:'',consent:'yes',consent_version:'enquiry-v1',configuration_id:'1tb',displayed_price:'72499',website:'',...extra}}
 function event(extra={}){const f=fields(extra);const body=new URLSearchParams(f).toString();return {contentLength:body.length,postData:{type:'application/x-www-form-urlencoded;charset=UTF-8',contents:body},parameters:Object.fromEntries(Object.entries(f).map(([k,v])=>[k,[v]]))}}
 function nonPurchase(type='general',extra={}){return {enquiry_type:type,configuration_id:'',displayed_price:'',delivery_pin:'',message:'Please help with my enquiry.',...extra}}
-for(const [config,price,personal,backup] of [['512gb',49900,'512 GB',''],['1tb',59900,'1 TB',''],['backup',81900,'1 TB','1 TB']])test(`authoritative catalogue and capacities: ${config}`,()=>{
+for(const [config,price,personal,backup] of [['512gb',60499,'512 GB',''],['1tb',72499,'1 TB',''],['backup',99499,'1 TB','1 TB']])test(`authoritative catalogue and capacities: ${config}`,()=>{
  const h=harness(),r=h.run({configuration_id:config,displayed_price:String(price)});assert.equal(r.code,'success');assert.equal(h.rows[0].tab,'Purchase Enquiries');assert.equal(h.rows[0].values[15],price);assert.equal(h.rows[0].values[17],personal);assert.equal(h.rows[0].values[18],backup);assert.equal(h.flags.flush,1);assert.equal(h.flags.released,1);
 });
 for(const type of ['general','support'])test(`routes ${type} with required message and optional support fields`,()=>{
@@ -29,7 +29,7 @@ for(const change of [
  {full_name:''},{full_name:'a'},{full_name:'x'.repeat(101)},{email:'bad'},{mobile:'12345'},{mobile:'++919876543210'},
  {consent:''},{consent:'true'},{consent_version:'obsolete'},{delivery_pin:'012345'},{delivery_pin:'56000'},
  {message:'x'.repeat(3001)},{message:'bad\u0000'},{full_name:'Bad\nName'},{configuration_id:'__proto__'},
- {displayed_price:'59900.00'},{displayed_price:'₹59,900'},{enquiry_type:'unknown'},{submission_id:'guessable'},
+ {displayed_price:'72499.00'},{displayed_price:'₹72,499'},{enquiry_type:'unknown'},{submission_id:'guessable'},
  {website:'spam'},{order_reference:'x'},{issue_category:'other'},nonPurchase('general',{message:''}),
  nonPurchase('support',{message:''}),nonPurchase('support',{issue_category:'invalid'}),nonPurchase('support',{device_serial:'x'.repeat(81)}),
  nonPurchase('general',{order_reference:'0001'}),nonPurchase('general',{configuration_id:'1tb'})
@@ -38,7 +38,7 @@ test('rejects duplicate/unknown parameters, wrong content type and oversized bod
  const h=harness();for(const e of [Object.assign(event(),{contentLength:20001}),Object.assign(event(),{postData:{type:'application/json'}}),Object.assign(event(),{parameters:{...event().parameters,email:['a','b']}}),Object.assign(event(),{parameters:{...event().parameters,unexpected:['x']}})])assert.equal(h.c.ncProcess_(e,h.services).code,'invalid');assert.equal(h.rows.length,0);
 });
 test('price discrepancy is explicit, writes nothing, and permits reviewed resubmission',()=>{
- const h=harness();let r=h.run({displayed_price:'49900'});assert.equal(r.code,'price');assert.match(r.price,/59,900/);assert.equal(h.rows.length,0);assert.equal(h.flags.append,0);r=h.run();assert.equal(r.code,'success');
+ const h=harness();let r=h.run({displayed_price:'60499'});assert.equal(r.code,'price');assert.match(r.price,/72,499/);assert.equal(h.rows.length,0);assert.equal(h.flags.append,0);r=h.run();assert.equal(r.code,'success');
 });
 test('same successful submission returns original receipt before cooldown/global limits',()=>{
  const h=harness({GLOBAL_MAX_SUBMISSIONS:'1'}),first=h.run();assert.equal(h.run().receipt,first.receipt);assert.equal(h.rows.length,1);assert.equal(h.flags.append,1);assert.equal(h.flags.flush,1);
@@ -46,6 +46,11 @@ test('same successful submission returns original receipt before cooldown/global
 test('idempotency survives a new process and consent/catalogue configuration changes',()=>{
  const h=harness(),first=h.run();h.settings.CONSENT_VERSION='enquiry-v2';h.c.NC_CATALOGUE_={...h.c.NC_CATALOGUE_,'1tb':{name:'1 TB',price:60000}};
  const fresh=context();vm.runInContext(source,fresh);assert.equal(fresh.ncProcess_(event(),h.services).receipt,first.receipt);assert.equal(h.rows.length,1);
+});
+test('historical accepted price/receipt survives the approved price increase; stale new enquiries are rejected',()=>{
+ const h=harness();h.c.NC_CATALOGUE_={...h.c.NC_CATALOGUE_,'1tb':{...h.c.NC_CATALOGUE_['1tb'],price:59900}};const old=h.run({displayed_price:'59900'});assert.equal(old.code,'success');const before=JSON.stringify(h.rows);
+ const fresh=context();vm.runInContext(source,fresh);assert.equal(fresh.ncProcess_(event({displayed_price:'59900'}),h.services).receipt,old.receipt);assert.equal(JSON.stringify(h.rows),before);assert.equal(h.rows[0].values[15],59900);
+ assert.equal(fresh.ncProcess_(event({displayed_price:'59900',submission_id:'22222222-2222-4222-8222-222222222222'}),h.services).code,'price');assert.equal(JSON.stringify(h.rows),before);
 });
 test('same ID with changed details conflicts, not a new row',()=>{const h=harness();h.run();assert.equal(h.run({message:'Different'}).code,'conflict');assert.equal(h.rows.length,1)});
 test('same email with a different submission ID is a new enquiry after cooldown',()=>{const h=harness();h.run();assert.equal(h.run({submission_id:'22222222-2222-4222-8222-222222222222'}).code,'rate');h.now.value+=60000;assert.equal(h.run({submission_id:'22222222-2222-4222-8222-222222222222'}).code,'success');assert.equal(h.rows.length,2)});
@@ -111,7 +116,7 @@ for(const kind of ['success','price','unavailable'])test(`actual branded HTML te
  assert.match(html,/Nest<span>Cloud/);assert.match(html,/Return to NestCloud/);assert.match(html,/lang="en"/);
  assert.doesNotMatch(html,/test@example.invalid|9876543210|560001|<\?/);
  if(kind==='success')assert.ok(html.includes(r.receipt));else assert.doesNotMatch(html,/Your enquiry reference/);
- if(kind==='price')assert.match(html,/59,900/);
+ if(kind==='price')assert.match(html,/72,499/);
 });
 
 test('overlapping same-ID attempt cannot write while the first request holds the shared lock',()=>{
@@ -144,7 +149,7 @@ for(const type of ['purchase','general','support'])test(`maintenance rejects new
  assert.equal(h.run(input).receipt,first.receipt);const blocked=h.run({...input,submission_id:'22222222-2222-4222-8222-222222222222'});assert.equal(blocked.code,'maintenance');assert.equal(blocked.message,'Maintenance <please wait>');assert.equal(h.c.ncEscape_(blocked.message),'Maintenance &lt;please wait&gt;');assert.equal(h.rows.length,1);
  h.settings.SITE_MAINTENANCE='false';h.now.value+=60000;assert.equal(h.run({...input,submission_id:'22222222-2222-4222-8222-222222222222'}).code,'success');
 });
-for(const [configuration_id,key,displayed_price] of [['512gb','STOCK_512GB','49900'],['1tb','STOCK_1TB','59900'],['backup','STOCK_BACKUP_PLUS','81900']])test(`${key} blocks new purchases but preserves accepted retries`,()=>{
+for(const [configuration_id,key,displayed_price] of [['512gb','STOCK_512GB','60499'],['1tb','STOCK_1TB','72499'],['backup','STOCK_BACKUP_PLUS','99499']])test(`${key} blocks new purchases but preserves accepted retries`,()=>{
  const h=harness(),fields={configuration_id,displayed_price},first=h.run(fields);assert.equal(first.code,'success');h.settings[key]='false';assert.equal(h.run(fields).receipt,first.receipt);
  assert.equal(h.run({...fields,submission_id:'22222222-2222-4222-8222-222222222222'}).code,'stock');assert.equal(h.rows.length,1);
  h.now.value+=60000;assert.equal(h.run(nonPurchase('general',{submission_id:'33333333-3333-4333-8333-333333333333'})).code,'success');
@@ -153,5 +158,5 @@ for(const [configuration_id,key,displayed_price] of [['512gb','STOCK_512GB','499
 test('formula defenses cover every stored string field and do not convert server prices to client text',()=>{
  const h=harness();h.run(nonPurchase('support',{full_name:'@name',email:'=test@example.invalid',message:'\t+SUM(1,2)',order_reference:'-001',device_serial:'=1'}));const row=h.rows[0].values;
  for(const index of [6,7,8,10,19,20])assert.ok(row[index].startsWith("'"),`cell ${index}`);
- const p=harness();p.run({displayed_price:'059900'});assert.equal(p.rows[0].values[15],59900);assert.equal(typeof p.rows[0].values[15],'number');
+ const p=harness();p.run({displayed_price:'072499'});assert.equal(p.rows[0].values[15],72499);assert.equal(typeof p.rows[0].values[15],'number');
 });

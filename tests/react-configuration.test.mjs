@@ -35,7 +35,7 @@ test('actual product and review controls default to 1 TB; explicit URLs override
  const container=await mount(UI.Configurator,UI.OrderPage);
  for(const f of fields(container))assert.match(chosen(f),/512 GB/);
  assert.equal(sessionStorage.getItem('nestcloud.configuration'),'512gb');
- assert.match(container.querySelector('.summary-total').textContent,/49,900/);
+ assert.match(container.querySelector('.summary-total').textContent,/60,499/);
 });
 test('all mounted configurators and review controls synchronize, including native radio groups',async()=>{
  const container=await mount(UI.Configurator,UI.Configurator,UI.OrderPage);
@@ -44,7 +44,7 @@ test('all mounted configurators and review controls synchronize, including nativ
  await click(fields(container)[0].querySelectorAll('input')[2]);
  for(const f of fields(container))assert.match(chosen(f),/Backup Plus/);
  assert.equal(query(),'backup');assert.equal(sessionStorage.getItem('nestcloud.configuration'),'backup');
- assert.match(container.querySelector('.summary-total').textContent,/81,900/);
+ assert.match(container.querySelector('.summary-total').textContent,/99,499/);
  for(const a of container.querySelectorAll('a[href*="/order?"]'))assert.match(a.getAttribute('href'),/configuration=backup/);
 });
 test('selection replaces its entry while preserving history state, unrelated query and fragment',async()=>{
@@ -112,13 +112,64 @@ test('device fetch priority is reserved for homepage and family intros, not conf
 });
 
 const policySources=JSON.parse(await readFile(new URL('../docs/policy-source-manifest.json',import.meta.url),'utf8'));
+const originalPolicies=JSON.parse(await readFile(new URL('../src/policies.json',import.meta.url),'utf8'));
 for(const policy of policySources)test(`complete policy wording matches official capture: ${policy.path}`,()=>{
  const html=renderToStaticMarkup(React.createElement(UI.PolicyDocument,{path:policy.path}));
  const rendered=new JSDOM(html);const body=rendered.window.document.querySelector('[data-policy-body]');
  const text=[...body.children].flatMap(e=>['UL','OL'].includes(e.tagName)?[...e.children].map(li=>li.textContent):[e.textContent]).join(' ').replace(/\s+/g,' ').trim();
- assert.equal(createHash('sha256').update(text).digest('hex'),policy.normalizedBodySHA256);
- assert.ok(rendered.window.document.body.textContent.includes(policy.sourceUpdated));
+ if(['/policies/tc','/policies/shipping--delivery','/policies/cancellation--refund','/policies/sla'].includes(policy.path)){
+  const original=originalPolicies.find(p=>p.path===policy.path).blocks.flatMap(b=>b.type==='list'?b.items:[b.text]).join(' ').replace(/\s+/g,' ').trim();assert.equal(createHash('sha256').update(original).digest('hex'),policy.normalizedBodySHA256,'original contractual source remains intact');assert.match(text,/FULL-PAYMENT REVISION/);assert.match(text,/full[ -]payment/i);assert.match(text,/10 working days from the date of successful full payment/);assert.doesNotMatch(text,/₹10,000|preorder advance|remaining balance/i);
+ }else{assert.equal(createHash('sha256').update(text).digest('hex'),policy.normalizedBodySHA256);assert.ok(rendered.window.document.body.textContent.includes(policy.sourceUpdated));}
  rendered.window.close();
+});
+test('approved shipping revision retains existing serviceability, delay and delivery qualifications',()=>{
+ const rendered=new JSDOM(renderToStaticMarkup(React.createElement(UI.PolicyDocument,{path:'/policies/shipping--delivery'})));
+ const text=rendered.window.document.querySelector('[data-policy-body]').textContent.replace(/\s+/g,' ');
+ const original=originalPolicies.find(p=>p.path==='/policies/shipping--delivery');
+ for(const block of original.blocks){
+  if(block.type==='heading'&&block.id==='section-3')continue;
+  if(/^(Products purchased during a preorder|The expected delivery window|Preorder delivery dates|Applicable shipping charges)/.test(block.text||''))continue;
+  for(const clause of block.type==='list'?block.items:[block.text])assert.ok(text.includes(clause.replace(/\s+/g,' ')),clause);
+ }
+ assert.match(text,/10 working days from the date of successful full payment/);
+ assert.match(text,/estimated dispatch timeframe, not a guaranteed delivery date/);
+ assert.match(text,/final payable amount, including shipping/);
+ assert.match(text,/before the customer confirms payment/);
+ assert.match(text,/No unexpected charges will be added afterward/);
+ assert.doesNotMatch(text,/free shipping (?:across|throughout|for all)|guaranteed dispatch/i);
+ rendered.window.close();
+});
+test('full-payment cancellation revision preserves eligible refunds, remedies and original timing without new penalties',()=>{
+ const rendered=new JSDOM(renderToStaticMarkup(React.createElement(UI.PolicyDocument,{path:'/policies/cancellation--refund'})));
+ const text=rendered.window.document.querySelector('[data-policy-body]').textContent.replace(/\s+/g,' ');
+ const original=originalPolicies.find(p=>p.path==='/policies/cancellation--refund');let section='';
+ for(const block of original.blocks){
+  if(block.type==='heading')section=block.id;
+  if(!['section-5','section-7','section-9','section-10','section-11','section-12','section-13'].includes(section))continue;
+  for(const clause of block.type==='list'?block.items:[block.text])assert.ok(text.includes(clause.replace(/\s+/g,' ')),clause);
+ }
+ assert.match(text,/For fully paid orders, customers may request cancellation before the product has been dispatched/);
+ assert.match(text,/If the cancellation is accepted, eligible amounts already paid will be refunded to the original payment method/);
+ assert.match(text,/not automatically accepted/);
+ assert.match(text,/consumer rights under Indian law/);
+ assert.match(text,/Existing orders retain their original contractual terms and historical obligations/);
+ assert.doesNotMatch(text,/₹10,000|preorder|remaining balance|non-refundable|cancellation fee|\b[0-9]+[–-][0-9]+ (?:working|business) days/i);
+ rendered.window.close();
+});
+test('new-order terms disclose all approved GST-inclusive prices without adding tax or fee and retain unchanged SLA support',()=>{
+ const terms=new JSDOM(renderToStaticMarkup(React.createElement(UI.PolicyDocument,{path:'/policies/tc'})));
+ const text=terms.window.document.querySelector('[data-policy-body]').textContent;
+ for(const price of ['60,499','72,499','99,499'])assert.ok(text.includes(price));
+ assert.match(text,/GST included/);assert.match(text,/No additional Razorpay processing fee/);
+ assert.doesNotMatch(text,/₹10,000|preorder|remaining balance|November 2026/i);
+ const sla=new JSDOM(renderToStaticMarkup(React.createElement(UI.PolicyDocument,{path:'/policies/sla'})));
+ const slaText=sla.window.document.querySelector('[data-policy-body]').textContent.replace(/\s+/g,' ');
+ const original=originalPolicies.find(p=>p.path==='/policies/sla');
+ for(const block of original.blocks){
+  if(/^For confirmed preorders,/.test(block.text||''))continue;
+  for(const clause of block.type==='list'?block.items:[block.text])assert.ok(slaText.includes(clause.replace(/\s+/g,' ')),clause);
+ }
+ terms.window.close();sla.window.close();
 });
 test('Helpful details footer destinations are all local policy pages',()=>{
  const rendered=new JSDOM(renderToStaticMarkup(React.createElement(UI.Footer)));
@@ -147,8 +198,9 @@ test('all 15 pages use customer-facing launch copy while preserving product limi
  assert.match(contact.getAttribute('href'),/^\/NestCloud-Website\/purchase-enquiry\?configuration=1tb$/);
  await click(order.querySelectorAll('input')[2]);
  assert.match(contact.getAttribute('href'),/configuration=backup$/);
- assert.match(order.querySelector('.summary-total').textContent,/81,900/);
- assert.match(order.textContent,/before you pay/);
+ assert.match(order.querySelector('.summary-total').textContent,/99,499/);
+ assert.match(order.textContent,/GST included/);
+ assert.match(order.textContent,/shipping shown before payment/);
  const os=await mount(UI.OSPage);
  assert.match(os.textContent,/Planned · NestCloud OS v1.1/);
  assert.match(os.textContent,/not currently available features/);

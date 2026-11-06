@@ -1,5 +1,35 @@
 # SettingsWiki — MasterSettings
 
+## PR #7 checkout extension (prepared, not deployed)
+
+### Staff payment and availability operations — approved manual V1 process
+
+MasterSettings controls the website/enquiry backend, **not Razorpay's offsite checkout**. The owner approved paired manual coordination for V1 on 6 November 2026. This is **not automatic synchronization**. Approval of the process does not authorize Live stock edits, release or deployment; do not edit Live resources under a TEST-only approval.
+
+- Disable one configuration: (1) set that Razorpay product's stock unavailable/zero or disable provider purchasing; (2) independently open its existing direct URL and verify it cannot initiate a new purchase; (3) set the matching `STOCK_*` FALSE; (4) refresh NestCloud and verify that configuration's checkout entry is hidden/disabled. Shared settings normally refresh in approximately 60 seconds, but verify rather than assume. Also consider already-open carts/in-flight payments: a fresh-page check does not prove they are cancelled. Record and reconcile any payment already in progress.
+- Disable every purchase: deactivate the specific Razorpay store (or zero all of its products) and verify direct URLs are blocked; then set `PURCHASE_FORM_ENABLED=FALSE`, `CHECKOUT_ENABLED=FALSE` and/or `SITE_MAINTENANCE=TRUE` as appropriate. A website-only switch is not a complete kill switch. Do not deactivate another brand's store or turn off Contact/Support unnecessarily.
+- Restore: verify provider mode, current product IDs/checkout URLs, exact GST-inclusive prices, shipping/serviceability, policy references and actual provider availability first. Reactivate/replenish only approved provider products, then restore the matching website flags. Refresh NestCloud and verify the correct configuration/destination. Retain notifications FALSE and existing unrelated settings.
+- After **every Webstore republish**, independently recheck all three product URLs and update approved `CHECKOUT_*_URL` values if IDs changed. The TEST republish regenerated `li_*` IDs; all three previous URLs returned product-not-found. Never silently replace an unavailable product with a different configuration or browser-controlled amount.
+- Payment verification: Razorpay Dashboard → Transactions → Payments; use the correct Test/Live mode. Check payment ID, Captured status, currency, amount (approved product plus disclosed shipping), selected configuration/quantity, linked order, customer/delivery details and refund state. Reconcile the order as paid and the correct amount captured before fulfilment. The observed Attempted Test order displayed its value under “Total Amount Paid” even though payment Failed: never trust that amount label alone. A URL parameter, screenshot, enquiry receipt or browser success page is not sufficient. Native provider records remain the order system; no second order spreadsheet was added.
+- Created, Failed, Cancelled, uncertain or unmatched payments are not paid orders. Look up the original payment/order IDs before any deliberate retry. Check all attempts for capture before resending a payment request. Never auto-refund, capture, resend or fulfil based only on an error popup.
+- Duplicate-click protection in Home-page checkout entry reduces accidental navigation; it does not guarantee that separate hosted visits cannot create duplicate paid orders. Staff must reconcile duplicate customer/order attempts and obtain authorization before any refund. Cross-order deduplication and actual successful provider confirmation remain release gates.
+- Verified Test cutoff limitation: an already-open Backup Plus cart retained an enabled Proceed button after catalogue stock zero was saved; it did not advance during the check and displayed no clear rejection. A fresh product view after clearing the cart showed Out of stock. This is not proof that an already-created/in-flight payment cannot finish. Pending payments must be reconciled; request provider cutoff semantics before claiming an immediate stop. Test unlimited stock was restored and its current direct link reverified without republishing.
+- Checkout must disclose shipping and final payable total before confirmation. The current TEST editor exposes no verified shipping tariff control; only one earlier zero-fee address scenario was confirmed. Do not assume nationwide free shipping, global PIN coverage or nonzero-charge calculation.
+
+The generated Sheet SettingsWiki descriptions now include the website/provider boundary and basic staff guidance. Those source changes are **not deployed**: refreshing the actual Sheet wiki requires a separately approved compatible Apps Script update/migration; no Google resources were modified. See [the payment-readiness report](PAYMENT-READINESS-REVIEW.md) for evidence, blockers and release gates.
+
+Five additional public settings bring the application table to 26 keys. The existing shared reader, migration and generated Sheet SettingsWiki are reused. Deploy compatible backend code before adding these keys: older strict readers reject unknown keys. No Sheet migration or deployment is authorized by the code change.
+
+| Key | Description | Allowed values | Default | Used in | Visibility | Redeployment |
+| --- | --- | --- | --- | --- | --- | --- |
+| CHECKOUT_ENABLED | Website hosted-checkout switch; does not revoke direct provider URLs | TRUE/FALSE | FALSE | Public projection, CheckoutPanel | Public boolean | No after compatible backend/frontend deployment |
+| CHECKOUT_MODE | Reviewed destination environment; not automatic provider-mode detection | test/live | test | CheckoutPanel | Public | No; live code gate remains FALSE pending separate approval |
+| CHECKOUT_512GB_URL | Reviewed fixed-price 512 GB provider product URL | Blank or exact HTTPS pages.razorpay.com/stores/st_ID/product/li_ID; no query, credentials or fragment | blank | CheckoutPanel | Public | No |
+| CHECKOUT_1TB_URL | Reviewed fixed-price 1 TB provider product URL | Same restricted product URL format | blank | CheckoutPanel | Public | No |
+| CHECKOUT_BACKUP_PLUS_URL | Reviewed fixed-price 1 TB + Backup Plus provider product URL | Same restricted product URL format | blank | CheckoutPanel | Public | No |
+
+Missing checkout configuration remains disabled. Website checkout additionally requires global intake, Purchase form, stock and maintenance checks. Backend enquiry gates remain authoritative for enquiries; Razorpay is authoritative for offsite orders and payments. No API secrets, payment amount overrides or payment-success query parameters are exposed. Product prices are now owner-approved ₹60,499 / ₹72,499 / ₹99,499, GST-inclusive; historical receipts retain their original saved amounts. The historical PR #6 notes below describe its pre-payment baseline, not a live payment rollout.
+
 Status: **implemented in draft PR #6; live activation must be verified separately**. This feature is stacked on the unmerged notification-hardening PR so its durable send-boundary and completion-lock fixes are preserved. No merge or public website deployment is implied.
 
 ## Current implementation findings

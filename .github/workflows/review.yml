@@ -1,7 +1,7 @@
 name: Validate website changes
 on:
   pull_request:
-    branches: [main, feat/apps-script-enquiry-backend, fix/notification-preflight-contention]
+    branches: [main, feat/apps-script-enquiry-backend, fix/notification-preflight-contention, feature/master-settings]
 permissions:
   contents: read
 jobs:

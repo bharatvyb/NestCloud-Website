@@ -25,7 +25,8 @@ export const enquirySettings = {
  consentVersion: import.meta.env.VITE_ENQUIRY_CONSENT_VERSION?.trim() || '',
 };
 export function validConsentVersion(value:string){return /^[a-zA-Z0-9._-]{1,40}$/.test(value)}
-export type PublicEnquirySettings={available:boolean;consentVersion:string;returnUrl:string;stock:Record<Configuration['id'],boolean>;forms:Record<EnquiryType,boolean>;banner:{enabled:boolean;message:string;link:string};maintenance:{enabled:boolean;message:string}};
+export type PublicEnquirySettings={available:boolean;consentVersion:string;returnUrl:string;stock:Record<Configuration['id'],boolean>;forms:Record<EnquiryType,boolean>;banner:{enabled:boolean;message:string;link:string};maintenance:{enabled:boolean;message:string};checkout:{enabled:boolean;mode:'test'|'live';urls:Record<Configuration['id'],string>}};
+export function validCheckoutUrl(value:string){return value==='' || /^https:\/\/pages\.razorpay\.com\/stores\/st_[A-Za-z0-9]+\/product\/li_[A-Za-z0-9]+$/.test(value)}
 export function validBannerLink(value:string):boolean {
  if(value==='')return true;
  if(value.length>2048 || /[\s\\<>"\x00-\x1f\x7f]/.test(value))return false;
@@ -42,9 +43,11 @@ export async function loadPublicEnquirySettings(endpoint:string,signal:AbortSign
  const forms=data.forms===undefined?{purchase:false,general:false,support:false}:data.forms;
  const banner=data.banner===undefined?{enabled:false,message:'Welcome to NestCloud!',link:''}:data.banner;
  const maintenance=data.maintenance===undefined?{enabled:false,message:'Website temporarily unavailable.'}:data.maintenance;
+ const checkout=data.checkout===undefined?{enabled:false,mode:'test',urls:{'512gb':'','1tb':'',backup:''}}:data.checkout;
+ if(!checkout || typeof checkout.enabled!=='boolean' || !['test','live'].includes(checkout.mode) || !checkout.urls || !['512gb','1tb','backup'].every(id=>typeof checkout.urls[id]==='string' && validCheckoutUrl(checkout.urls[id])))throw new Error('Checkout settings unavailable');
  const message=(value:unknown)=>typeof value==='string' && value.length<=500 && !/[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]/.test(value);
  if(!forms || !['purchase','general','support'].every(type=>typeof forms[type]==='boolean') || !banner || typeof banner.enabled!=='boolean' || !message(banner.message) || typeof banner.link!=='string' || !validBannerLink(banner.link) || !maintenance || typeof maintenance.enabled!=='boolean' || !message(maintenance.message))throw new Error('Enquiry settings unavailable');
- return {available:data.available,consentVersion:data.consentVersion,returnUrl:data.returnUrl,stock:{'512gb':data.stock['512gb'],'1tb':data.stock['1tb'],backup:data.stock.backup},forms:{purchase:forms.purchase,general:forms.general,support:forms.support},banner:{enabled:banner.enabled,message:banner.message,link:banner.link},maintenance:{enabled:maintenance.enabled,message:maintenance.message}};
+ return {available:data.available,consentVersion:data.consentVersion,returnUrl:data.returnUrl,stock:{'512gb':data.stock['512gb'],'1tb':data.stock['1tb'],backup:data.stock.backup},forms:{purchase:forms.purchase,general:forms.general,support:forms.support},banner:{enabled:banner.enabled,message:banner.message,link:banner.link},maintenance:{enabled:maintenance.enabled,message:maintenance.message},checkout:{enabled:checkout.enabled,mode:checkout.mode,urls:{'512gb':checkout.urls['512gb'],'1tb':checkout.urls['1tb'],backup:checkout.urls.backup}}};
 }
 export function payloadFor(type:EnquiryType, fields:EnquiryFields, consentVersion:string, configuration?:Configuration):Record<string,string> {
  const payload:Record<string,string>={enquiry_type:type,full_name:fields.full_name.trim(),email:fields.email.trim().toLowerCase(),mobile:fields.mobile.trim(),message:fields.message.trim().replace(/\r\n?|\n/g,'\r\n'),consent:fields.consent?'yes':'',consent_version:consentVersion,website:fields.website.trim()};

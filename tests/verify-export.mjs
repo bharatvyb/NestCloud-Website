@@ -1,6 +1,24 @@
 import {readFile,stat} from 'node:fs/promises';
 import assert from 'node:assert/strict';
 import path from 'node:path';
+import vm from 'node:vm';
+const backend=vm.createContext({});
+vm.runInContext(await readFile('apps-script/Code.gs','utf8'),backend);
+for(const route of ['', 'family/']){
+ const html=await readFile(`dist/${route}index.html`,'utf8');
+ const product=JSON.parse(html.match(/<script type="application\/ld\+json">(.*?)<\/script>/s)[1]);
+ assert.equal(product.name,'NestCloud Home');
+ assert.equal(product.hasVariant.length,3);
+ for(const variant of product.hasVariant){
+  const approved={'512gb':60499,'1tb':72499,backup:99499}[variant.sku];
+  assert.equal(variant.offers.price,approved);
+  assert.equal(variant.offers.price,backend.NC_CATALOGUE_[variant.sku].price);
+  assert.equal(variant.offers.priceSpecification.price,approved);
+  assert.equal(variant.offers.priceSpecification.valueAddedTaxIncluded,true);
+  assert.equal(variant.offers.priceCurrency,'INR');
+  assert.equal(new URL(variant.offers.url).searchParams.get('configuration'),variant.sku);
+ }
+}
 const routes=JSON.parse(await readFile('src/routes.json','utf8'));
 const origin='https://bharatvyb.github.io/NestCloud-Website/';
 const prefix='/NestCloud-Website/';
