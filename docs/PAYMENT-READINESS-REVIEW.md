@@ -2,6 +2,36 @@
 
 Status: **NO-GO for new Live checkout/prices**. PR #7 remains a draft stacked on `feature/master-settings`. Existing Live store `st_TNDdSuG2qOGoJJ` remains Active and unchanged. No merge, main push, Pages/Google deployment, DNS/Canva edit, Live product/settings mutation, real charge or new customer enquiry occurred.
 
+## Blocker-resolution follow-up after aa1079f
+
+The owner has **approved paired manual Razorpay + MasterSettings coordination for V1**, not automatic synchronization. SettingsWiki now records all four disable steps, provider-first enable checks and website verification. No Live stock or Google Sheet value was changed. This decision is resolved; do not ask for it again.
+
+Fresh Test Visa attempts using the current published 512 GB URL reproduced the same simulator callback error as netbanking. The owner also reproduced it in a separately authorized Chrome attempt. Independent native Test records:
+
+| Payment | Order | Amount | Observed state |
+| --- | --- | ---: | --- |
+| pay_TwqEUerMT6yjBd | order_Twq47j14GrM45m | ₹60,499 | Earlier netbanking Failed/payment_cancelled; order Attempted |
+| pay_Tww2pXZjPrRqoF | order_TwvyzVW6nWqpaw | ₹60,499 | Fresh documented Test Visa initially Created, later Customer–Payment Cancelled after leaving the stalled UI; order Attempted |
+| pay_TwwEz1Y45WEeUO | order_TwwCd2F31FZblb | ₹60,499 | Chrome reproduction observed Created/uncaptured; order Attempted, not Paid |
+
+No capture, successful customer receipt or duplicate-paid-order guarantee is claimed. The public Test restriction, native Test records, matching amount/product/order and current URLs were checked. No republish occurred during these fresh attempts, and the temporary cutoff test involved Backup Plus stock, not the 512 GB payment product. This points away from the GitHub frontend and retired product links, but provider/account-specific root cause remains unconfirmed. Further retries stopped. See [the prepared, unsent support request](RAZORPAY-SUPPORT-REQUEST.md) for reproducible steps and exact error payload. Private contact data, merchant identifiers, session tokens and authentication URLs are omitted.
+
+### Already-open cart / stock cutoff result
+
+Prepared a quantity-one Backup Plus Test cart at ₹99,499 before changing stock. Saved Test catalogue stock zero and reopened the editor to independently confirm the saved value. The existing cart still displayed an enabled Proceed button, and its direct product view still displayed the cart quantity instead of an Out-of-stock notice while that item was in the cart. Clicking Proceed did not open payment selection during the check and provided no clear rejection message. After clearing the Test cart, the fresh direct URL showed Out of stock and no Add-to-cart button.
+
+**Limitation:** this verifies fresh-view prevention, not completion prevention for already-created/in-flight payments. Do not advertise immediate cancellation of all outstanding orders or rely on the visible button state. Provider confirmation and successful Test authorization/capture cutoff tests remain required. Restored the original unlimited Backup Plus Test stock and independently verified Add to cart returned at the SAME current URL. No republish, price change or Live stock edit occurred; Test carts were cleared.
+
+### Account-specific shipping and presentation inspection
+
+Inspected the native Test store operational Settings menu (Page Settings only), editor/product/business fields, account Checkout Features and Payment Configuration without saving account changes. No shipping tariff editor was exposed. Magic Checkout still asks for platform integration. [Official Storefront guidance](https://razorpay.com/blog/razorpay-storefront/) mentions shipping-fee configuration, so lack of a control in this account is **not proof that Razorpay universally cannot support it**. Request account-specific native setup guidance before choosing an alternative. No numeric tariff is approved or invented; nonzero-fee calculation remains unverified. The already-observed zero-fee Test address is not a nationwide free-shipping policy.
+
+Native account-level payment presentation configuration exists, but affects multiple surfaces; the standard configuration's View is read-only. No EMI/Pay Later or other account-wide change was made. The official guide distinguishes display choices from enabling/disabling payment methods. Per-Webstore scoping needs provider guidance.
+
+A new-tab mobile viewport attempt also failed to apply: requested 390×844 but measured 1280 px width. Override reset; no mobile pass claimed. Chrome connector navigation/inspection failed; the Chrome payment clicks were manual, and the resulting record was verified independently in the in-app Test dashboard. The prior image-upload limitation remains unresolved; no image changes were made in this pass. No custom backend, browser security changes, extension disabling or speculative frontend patch was introduced.
+
+Screenshots safe to share with the provider (no private contact data): [owner-supplied callback error](review/payment-readiness/test-callback-error.png), [fresh direct link at zero Test stock](review/payment-readiness/direct-link-zero-stock.png), [already-open cart still displaying Proceed](review/payment-readiness/cached-cart-zero-stock.png). The editor's saved zero value and restored unlimited value were read independently; the public cart screenshot alone does not establish stock or final authorization behavior.
+
 ## Approved implementation
 
 - Catalogue remains 512 GB ₹60,499, 1 TB ₹72,499, 1 TB + dedicated 1 TB Backup Plus SSD ₹99,499. Frontend catalogue, trusted enquiry validation and exported product metadata agree. Prices include GST; no extra GST/processing surcharge. Historical accepted receipts and original policy records remain unchanged.
@@ -34,16 +64,16 @@ Prefix `https://pages.razorpay.com/stores/st_Twq3A2wp0N9cWZ/product/`. All three
 | Payment-reference/customer identification | PASS for the existing failed Test record — dashboard links payment/order, item, quantity, full amount, synthetic customer/contact and shipping/billing address. Order remains Attempted (one attempt), not Paid. Its drawer misleadingly labels the displayed order amount “Total Amount Paid” despite the failed payment: staff must use captured payment + paid order/refund state, never that label alone. This is not proof of a successful order/receipt. No customer data copied to this report. |
 | Product unavailable / old direct link | PASS, narrow scope — earlier Test stock zero removed Add to cart on the direct Backup Plus URL; original unlimited stock restored and Add returned. Current retired URLs also show product-not-found. Existing-cart/in-flight races remain unverified. |
 | STOCK flags, Purchase disabled, maintenance | MOCK — all three frontend stock flags independently block their checkout entry; global/Purchase/maintenance gates tested; inherited backend enquiry enforcement/idempotency tests pass. No actual Sheet switches changed, and these gates do NOT revoke provider URLs. |
-| Automatic stock synchronization | NOT IMPLEMENTED / BLOCKED — hosted provider checkout does not use this website's settings reader. No documented supported Webstore stock integration was verified. Dashboard stock/deactivation are available. Proposed paired manual process requires owner acceptance; no undocumented endpoint, scheduled job or secret in Sheets. |
+| Automatic stock synchronization | NOT IMPLEMENTED, intentionally — owner approved manual V1 coordination. Hosted provider checkout does not use this website's settings reader. Dashboard stock/deactivation and fresh-view prevention verified; existing-cart/in-flight cutoff remains limited as recorded above. No undocumented endpoint, scheduled job or secret in Sheets. |
 | Duplicate attempts | MOCK for same-view duplicate clicks and Back reset; provider cross-order duplicate-paid-order handling BLOCKED. Native payment/order records must be reconciled; no guarantee that two separate visits cannot create two paid orders. |
 | Policies and support | PASS — both public sites' original six policy bodies checked against repository clauses, including privacy; product/review/footer links covered by tests. Updated Test notice has approved summary and original public policy references plus support details. BLOCKED — Webstore terms box renders URLs as text, not clickable policy anchors; public policies still have old preorder wording until separately approved publication. Need provider-supported clickable placement and coordinated release, not injected HTML or a Canva edit. |
 | Mobile / imagery / payment methods | BLOCKED — prior viewport override did not actually resize; no mobile pass claimed. Product placeholders remain after upload-control failure. Hosted EMI/Pay Later presentation needs review against the requested checkout experience; it is not evidence that the merchant receives partial payment. No account-wide changes made. |
 
-## Minimal operating approach (proposal, not deployed automation)
+## Approved manual operating approach (not deployed automation)
 
 Use native Razorpay orders/payments as the system of record. Reconcile captured/unrefunded amount, INR currency, order, configuration, quantity, customer and address before fulfilment. Never infer paid status from an enquiry receipt/redirect. No new payment verification API is necessary merely to label a website return; the website deliberately makes no paid claim.
 
-For availability, provider stock/deactivation must be applied and independently verified before closing the matching website gate; restore provider details first, then website flags. A fresh-page check does not cancel in-flight attempts. Full instructions are in [SettingsWiki](SettingsWiki.md). Ask the owner to accept this manual V1 process rather than advertising automatic sync. If strict automated or cross-order guarantees are mandatory, agree on scope before adding a trusted payment/order integration.
+For availability, provider stock/deactivation must be applied and independently verified before closing the matching website gate; restore provider details first, then website flags and verify the website. A fresh-page check does not cancel in-flight attempts. Full instructions are in [SettingsWiki](SettingsWiki.md). The owner accepted this manual V1 process; never advertise it as automatic sync. If strict automated or cross-order guarantees become mandatory, agree on scope before adding a trusted payment/order integration.
 
 For shipping, first obtain the actual tariff/serviceability rules and account-specific provider guidance. Do not silently assume zero shipping. If the hosted store cannot support the approved rules, report the limitation before changing architecture. The smallest potential fallback is the existing enquiry/staff-quote flow followed by an official fixed full-payment Razorpay link including disclosed shipping; this is a proposal only, not implemented or authorized here.
 
@@ -53,7 +83,8 @@ Changed files in this revision: `src/commerce-policies.ts`, `src/CheckoutPanel.t
 
 - [ ] Verify nonzero shipping and final payable total for approved representative PINs/configurations, including invalid/unserviceable addresses; no late surcharge.
 - [ ] Resolve simulator failure; verify actual Test capture + matching paid order, receipt/confirmation and staff identification for all configurations; controlled failure/cancel/retry/duplicate cases.
-- [ ] Agree on V1 availability operations; test direct URLs plus open-cart/in-flight cases and restoration. Do not describe paired manual updates as automatic synchronization.
+- [x] Owner-approved V1 paired manual availability process documented; do not describe it as automatic synchronization.
+- [ ] Resolve existing-cart/in-flight payment cutoff semantics; fresh direct-link blocking and Test stock restoration have been verified, but no capture-time guarantee is established.
 - [ ] Verify clickable provider policy links, approved new-order full-payment publication, imagery, responsive layout and allowed payment-method presentation. Preserve old contractual records and Canva/DNS.
 - [ ] Confirm GST classification/invoicing and actual account fees; no browser/Sheet secrets, extra GST or processing surcharge.
 - [ ] Require full automated tests, TypeScript, build, 17-page export/base-path checks and green PR review CI.
@@ -67,3 +98,7 @@ Rollback: stop provider acceptance only with explicit authorization; a website g
 Local evidence screenshots: `/tmp/nestcloud-approved-test-product.png`, `/tmp/nestcloud-old-test-product-retired.png`, earlier cart/publication/stock evidence. No private customer/contact screenshots are committed. Repository tests provide MOCK coverage, not payment success evidence.
 
 Automated verification for this revision: **283/283 tests pass**, including backend/enquiry/notification/settings regressions, policy preservation and approved dispatch/shipping disclosure, all three checkout stock flags, duplicate-click/Back behavior and forged payment-return parameters. TypeScript, production build and 17-page static export/base-path validation pass. Require the pushed revision's separate GitHub review check before considering CI complete.
+
+Follow-up verification: all existing 283 tests, TypeScript/build and 17-page export rerun successfully. This follow-up changes operating evidence/documentation only: no production-code defect was established to justify a speculative fix or fabricated unit test for Razorpay's server behavior. Bank-decline/success/receipt, completed-payment repetition, responsive mobile and upload scenarios remain blocked or unverified, not silently passed. No additional business policy decision is required now; an actual tariff will need separate approval after supported rate configuration is established. The immediate blockers require provider guidance and controlled verification.
+
+Follow-up files: `docs/SettingsWiki.md`, `docs/PAYMENT-READINESS-REVIEW.md`, `docs/RAZORPAY-V1-IMPLEMENTATION.md`, `docs/RELEASE-CHECKLIST.md`, new `docs/RAZORPAY-SUPPORT-REQUEST.md` and three screenshots under `docs/review/payment-readiness/`. The earlier 15-file implementation list above describes aa1079f, not a new production-code rewrite in this follow-up. PR #5/#6 and all release controls remain unchanged.

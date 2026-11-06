@@ -2,6 +2,8 @@
 
 PR #7 adds payment gates and new catalogue prices. Use [the complete payment release checklist](PAYMENT-READINESS-REVIEW.md#release-checklist--all-remain-separately-gated) alongside this PR #5/#6 baseline. Do not release the new frontend against TEST backend version 7 or treat the historical 21-key/no-migration note below as the five-key checkout upgrade procedure.
 
+PR #7 follow-up gate: paired manual Razorpay/MasterSettings coordination is approved and documented, but **new Live checkout remains NO-GO**. Official Test-card Success reproduced the callback error in the in-app browser and an owner-performed Chrome attempt; Test records are uncaptured/not Paid. Submit/review [the prepared provider request](RAZORPAY-SUPPORT-REQUEST.md), resolve shipping-rate setup and policy-link/mobile/image issues, and verify in-flight stock cutoff before advancing. Do not re-request already-approved dispatch/shipping-policy/manual-process decisions or treat approval of those decisions as release permission.
+
 ## Reviewed facts
 
 - PR #5: draft `fix/notification-preflight-contention` → `main`, current validation passing, mergeable at review time.
