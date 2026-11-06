@@ -15,6 +15,7 @@ const backend=vm.createContext({});vm.runInContext(await readFile(new URL('../ap
 let dom,App,root,createRoot,posts,sequence=0;
 globalThis.IS_REACT_ACT_ENVIRONMENT=true;
 beforeEach(async()=>{
+ globalThis.fetch=async()=>({ok:true,json:async()=>({available:true,consentVersion:'enquiry-v1',returnUrl:'https://nestcloud.in/',forms:{purchase:true,general:true,support:true},stock:{'512gb':true,'1tb':true,backup:true}})});
  dom=new JSDOM('<!doctype html><html><head><meta name="description" content=""></head><body><div id="root"></div></body></html>',{url:'https://example.invalid/NestCloud-Website/family/',pretendToBeVisual:true});
  for(const key of ['window','document','location','history','sessionStorage','navigator','HTMLElement','Event','MouseEvent'])Object.defineProperty(globalThis,key,{value:dom.window[key],configurable:true,writable:true});
  globalThis.requestAnimationFrame=callback=>window.requestAnimationFrame(callback);globalThis.cancelAnimationFrame=id=>window.cancelAnimationFrame(id);dom.window.HTMLElement.prototype.scrollIntoView=function(){};

@@ -8,7 +8,7 @@ const id='11111111-1111-4111-8111-111111111111';
 function context(){return vm.createContext({Date,Number,JSON,Object,Array,String,Error});}
 function harness(overrides={}){
  const c=context();vm.runInContext(source,c);
- const settings={ALLOW_SUBMISSIONS:'true',SPREADSHEET_ID:'test-only-sheet-identifier',CONSENT_VERSION:'enquiry-v1',...overrides};
+ const settings={ALLOW_SUBMISSIONS:'true',SPREADSHEET_ID:'test-only-sheet-identifier',CONSENT_VERSION:'enquiry-v1',STOCK_512GB:'true',STOCK_1TB:'true',STOCK_BACKUP_PLUS:'true',PURCHASE_FORM_ENABLED:'true',CONTACT_FORM_ENABLED:'true',SUPPORT_FORM_ENABLED:'true',...overrides};
  const rows=[], flags={locked:false,released:0,read:0,append:0,flush:0}, now={value:Date.parse('2026-10-28T00:00:00Z')};let serial=0;
  const services={properties:{getProperty:k=>settings[k]??null},hash:s=>createHash('sha256').update(s).digest('hex'),now:()=>now.value,uuid:()=>`00000000-0000-4000-8000-${String(++serial).padStart(12,'0')}`,
   lock:()=>({tryLock(){if(flags.busy)return false;flags.locked=true;return true},releaseLock(){flags.released++;flags.locked=false}}),
@@ -122,6 +122,33 @@ test('overlapping same-ID attempt cannot write while the first request holds the
 });
 test('consent version disagreement rejects new rows but preserves an exact accepted receipt',()=>{
  const h=harness();const first=h.run();h.settings.CONSENT_VERSION='enquiry-v2';h.now.value+=60000;assert.equal(h.run({submission_id:'22222222-2222-4222-8222-222222222222'}).code,'invalid');assert.equal(h.rows.length,1);assert.equal(h.run().receipt,first.receipt);
+});
+for(const [type,key] of [['purchase','PURCHASE_FORM_ENABLED'],['general','CONTACT_FORM_ENABLED'],['support','SUPPORT_FORM_ENABLED']])test(`${key} blocks only new matching enquiries and preserves receipts`,()=>{
+ const input=type==='purchase'?{}:nonPurchase(type),h=harness(),receipt=h.run(input);assert.equal(receipt.code,'success');h.settings[key]='false';assert.equal(h.run(input).receipt,receipt.receipt);
+ assert.equal(h.run({...input,submission_id:'22222222-2222-4222-8222-222222222222'}).code,'form_disabled');assert.equal(h.rows.length,1);
+ const other=harness({[key]:'false'});assert.equal(other.run(type==='general'?nonPurchase('support'):nonPurchase('general')).code,'success');
+});
+for(const [type,key] of [['purchase','PURCHASE_FORM_ENABLED'],['general','CONTACT_FORM_ENABLED'],['support','SUPPORT_FORM_ENABLED']])test(`${key} requires explicit true for new enquiries, including after an accepted receipt`,()=>{
+ for(const value of [null,undefined,'','yes','1',false,1]){
+  const h=harness(),input=type==='purchase'?{}:nonPurchase(type),first=h.run(input);assert.equal(first.code,'success');h.settings[key]=value;
+  assert.equal(h.run(input).receipt,first.receipt,'accepted receipt survives a missing/malformed switch');
+  assert.equal(h.run({...input,submission_id:'22222222-2222-4222-8222-222222222222'}).code,'form_disabled');assert.equal(h.rows.length,1);
+ }
+ const h=harness(),input=type==='purchase'?{}:nonPurchase(type),first=h.run(input),read=h.services.properties.getProperty;
+ h.services.properties.getProperty=k=>{if(k===key)throw Error('Malformed Sheet boolean');return read(k)};
+ assert.equal(h.run(input).receipt,first.receipt,'accepted receipt precedes reader validation errors');
+ assert.equal(h.run({...input,submission_id:'22222222-2222-4222-8222-222222222222'}).code,'unavailable');assert.equal(h.rows.length,1);
+});
+for(const type of ['purchase','general','support'])test(`maintenance rejects new ${type} enquiries but preserves accepted retry`,()=>{
+ const h=harness(),input=type==='purchase'?{}:nonPurchase(type),first=h.run(input);h.settings.SITE_MAINTENANCE='true';h.settings.MAINTENANCE_MESSAGE='Maintenance <please wait>';
+ assert.equal(h.run(input).receipt,first.receipt);const blocked=h.run({...input,submission_id:'22222222-2222-4222-8222-222222222222'});assert.equal(blocked.code,'maintenance');assert.equal(blocked.message,'Maintenance <please wait>');assert.equal(h.c.ncEscape_(blocked.message),'Maintenance &lt;please wait&gt;');assert.equal(h.rows.length,1);
+ h.settings.SITE_MAINTENANCE='false';h.now.value+=60000;assert.equal(h.run({...input,submission_id:'22222222-2222-4222-8222-222222222222'}).code,'success');
+});
+for(const [configuration_id,key,displayed_price] of [['512gb','STOCK_512GB','49900'],['1tb','STOCK_1TB','59900'],['backup','STOCK_BACKUP_PLUS','81900']])test(`${key} blocks new purchases but preserves accepted retries`,()=>{
+ const h=harness(),fields={configuration_id,displayed_price},first=h.run(fields);assert.equal(first.code,'success');h.settings[key]='false';assert.equal(h.run(fields).receipt,first.receipt);
+ assert.equal(h.run({...fields,submission_id:'22222222-2222-4222-8222-222222222222'}).code,'stock');assert.equal(h.rows.length,1);
+ h.now.value+=60000;assert.equal(h.run(nonPurchase('general',{submission_id:'33333333-3333-4333-8333-333333333333'})).code,'success');
+ const missing=harness({[key]:null});assert.equal(missing.run(fields).code,'stock');
 });
 test('formula defenses cover every stored string field and do not convert server prices to client text',()=>{
  const h=harness();h.run(nonPurchase('support',{full_name:'@name',email:'=test@example.invalid',message:'\t+SUM(1,2)',order_reference:'-001',device_serial:'=1'}));const row=h.rows[0].values;

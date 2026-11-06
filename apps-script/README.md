@@ -1,6 +1,30 @@
-# NestCloud enquiry backend — Phase 2
+# NestCloud enquiry backend
 
-Backend only. The React website, legal policies, catalogue prices, payment integration, DNS and GitHub Pages deployment are unchanged. No live deployment or Google account access was performed.
+## Current configuration: MasterSettings migration (draft PR #6)
+
+Use [SettingsWiki](../docs/SettingsWiki.md) for the current configuration reference, activation, verification and rollback procedure. The older Phase 2/notification setup instructions below describe the pre-migration backend and are retained as historical design context, **not as the current activation runbook**.
+
+`SPREADSHEET_ID` is the only necessary runtime Script Property. Operational configuration is read from `MasterSettings` (`Key | Value`) in that same private spreadsheet. The private editor helper `migrateMasterSettings_()` validates and copies existing values and effective defaults, preserves the exact notification cutover, adds the three approved stock switches initially TRUE, and creates the `SettingsWiki` reference tab. It retains all legacy Script Properties. Do not delete them without explicit post-verification cleanup approval.
+
+Keep notifications FALSE throughout migration. Preserve the existing project, Web App URL, single worker trigger, enquiry records and notification history. Existing MasterSettings values are preserved on reruns. Missing legacy consent/cutover or schema conflicts stop migration. Do not recreate enquiry/outbox tabs during upgrades.
+
+This migration targets an existing installation with its original outbox and cutover. It deliberately refuses to recreate missing notification history. First-time notification initialization must use the pre-migration setup procedure before migration; never initialize a fresh cutover over an existing history.
+
+`GET /exec?resource=settings` returns only intake availability, current consent version, safe return URL and three stock booleans. Generic GET remains the branded information page, with no enquiry lookup. All other settings stay backend-only. The frontend reads public settings on form mount and browser Back; errors fail closed, not back to stale build values. POST remains native form navigation with the existing receipt/idempotency behavior.
+
+`STOCK_512GB`, `STOCK_1TB`, `STOCK_BACKUP_PLUS` control **new purchase enquiries**, not prices, quantities, General Contact or Technical Support. The backend recovers an existing matching receipt before checking stock. Missing stock switches mean unavailable. Changes apply without code redeployment after initial backend/frontend activation.
+
+V1 completion adds `PURCHASE_FORM_ENABLED`, `CONTACT_FORM_ENABLED`, `SUPPORT_FORM_ENABLED` (TRUE), `BANNER_ENABLED` (FALSE), `BANNER_MESSAGE` (`Welcome to NestCloud!`), `BANNER_LINK` (blank), `SITE_MAINTENANCE` (FALSE), and `MAINTENANCE_MESSAGE` (`Website temporarily unavailable.`). The existing migration adds only these eight missing keys on the current 13-key Sheet and regenerates SettingsWiki. No legacy properties are deleted. Do not run it or update TEST code/deployment without the owner's new approval.
+
+The fixed public projection additionally exposes form booleans, plain-text banner content with an optional validated HTTPS link, and maintenance notice controls. New form/maintenance gates run **after accepted duplicate receipt lookup** and before new writes. Global ALLOW_SUBMISSIONS behavior and notification processing are unchanged. Site maintenance keeps contact/support information accessible, but blocks new enquiry submissions. One shared frontend loader refreshes settings roughly every 60 seconds while mounted; the backend remains authoritative. Final release hardening requires explicit TRUE for each form in both public API and new-write enforcement; missing/malformed keys disable submissions, and a missing frontend forms projection disables every form. Migration's initial TRUE values are explicit provisioning, not runtime fallbacks. Existing accepted receipts remain recoverable. TEST remains on the previously approved version 7 until a new deployment is explicitly approved. See SettingsWiki and the release checklist.
+
+V1 upgrade sequencing matters: deploy the new compatible backend against the existing 13 settings **before** running the eight-key migration; the old version-6 reader rejects unknown keys. Do not roll version 6 back over a 21-key table without an approved settings snapshot restoration. See SettingsWiki's V1 upgrade/rollback notes. No live mutation or deployment is authorized by these instructions alone.
+
+Verification: `npm test`, `npx tsc --noEmit`, `npm run build`, `npm run check:export`. Mock tests do not prove live browser CORS, Google Sheet writes or email delivery. No DNS, Canva, custom domain or public website deployment is part of this feature.
+
+## Historical Phase 2 design and setup (pre-migration only)
+
+The following describes the original implementation. Operational property references are superseded by MasterSettings above. Catalogue prices, payment integration and DNS remain unchanged.
 
 ## Files and execution
 

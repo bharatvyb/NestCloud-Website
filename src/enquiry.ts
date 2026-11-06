@@ -25,6 +25,27 @@ export const enquirySettings = {
  consentVersion: import.meta.env.VITE_ENQUIRY_CONSENT_VERSION?.trim() || '',
 };
 export function validConsentVersion(value:string){return /^[a-zA-Z0-9._-]{1,40}$/.test(value)}
+export type PublicEnquirySettings={available:boolean;consentVersion:string;returnUrl:string;stock:Record<Configuration['id'],boolean>;forms:Record<EnquiryType,boolean>;banner:{enabled:boolean;message:string;link:string};maintenance:{enabled:boolean;message:string}};
+export function validBannerLink(value:string):boolean {
+ if(value==='')return true;
+ if(value.length>2048 || /[\s\\<>"\x00-\x1f\x7f]/.test(value))return false;
+ try{const url=new URL(value);return /^https:\/\//i.test(value) && url.protocol==='https:' && !url.username && !url.password && /^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?(?:\.[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?)+$/i.test(url.hostname)}catch{return false}
+}
+export async function loadPublicEnquirySettings(endpoint:string,signal:AbortSignal):Promise<PublicEnquirySettings> {
+ if(!validEndpoint(endpoint))throw new Error('Enquiry settings unavailable');
+ // Simple anonymous GET: no credentials, private keys or preflight headers.
+ const response=await fetch(`${endpoint}?resource=settings`,{signal,credentials:'omit',cache:'no-store',redirect:'follow'});
+ if(!response.ok)throw new Error('Enquiry settings unavailable');
+ const data=await response.json();
+ if(!data || typeof data.available!=='boolean' || typeof data.consentVersion!=='string' || !validConsentVersion(data.consentVersion) || !['https://nestcloud.in/','https://bharatvyb.github.io/NestCloud-Website/'].includes(data.returnUrl) || !data.stock || !['512gb','1tb','backup'].every(id=>typeof data.stock[id]==='boolean'))throw new Error('Enquiry settings unavailable');
+ // A missing form projection must never authorize new submissions.
+ const forms=data.forms===undefined?{purchase:false,general:false,support:false}:data.forms;
+ const banner=data.banner===undefined?{enabled:false,message:'Welcome to NestCloud!',link:''}:data.banner;
+ const maintenance=data.maintenance===undefined?{enabled:false,message:'Website temporarily unavailable.'}:data.maintenance;
+ const message=(value:unknown)=>typeof value==='string' && value.length<=500 && !/[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]/.test(value);
+ if(!forms || !['purchase','general','support'].every(type=>typeof forms[type]==='boolean') || !banner || typeof banner.enabled!=='boolean' || !message(banner.message) || typeof banner.link!=='string' || !validBannerLink(banner.link) || !maintenance || typeof maintenance.enabled!=='boolean' || !message(maintenance.message))throw new Error('Enquiry settings unavailable');
+ return {available:data.available,consentVersion:data.consentVersion,returnUrl:data.returnUrl,stock:{'512gb':data.stock['512gb'],'1tb':data.stock['1tb'],backup:data.stock.backup},forms:{purchase:forms.purchase,general:forms.general,support:forms.support},banner:{enabled:banner.enabled,message:banner.message,link:banner.link},maintenance:{enabled:maintenance.enabled,message:maintenance.message}};
+}
 export function payloadFor(type:EnquiryType, fields:EnquiryFields, consentVersion:string, configuration?:Configuration):Record<string,string> {
  const payload:Record<string,string>={enquiry_type:type,full_name:fields.full_name.trim(),email:fields.email.trim().toLowerCase(),mobile:fields.mobile.trim(),message:fields.message.trim().replace(/\r\n?|\n/g,'\r\n'),consent:fields.consent?'yes':'',consent_version:consentVersion,website:fields.website.trim()};
  let mobile=payload.mobile.replace(/[ ()-]/g,'');

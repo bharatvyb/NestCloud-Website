@@ -20,6 +20,7 @@ beforeEach(async()=>{
  for(const key of ['window','document','location','history','sessionStorage','navigator','HTMLElement','Event','MouseEvent'])Object.defineProperty(globalThis,key,{value:dom.window[key],configurable:true,writable:true});
  ({createRoot}=await import('react-dom/client'));
  UI=await import('data:text/javascript;base64,'+Buffer.from(compiled).toString('base64')+'#'+sequence++);
+ globalThis.fetch=async()=>({ok:true,json:async()=>({available:true,consentVersion:'enquiry-v1',returnUrl:'https://nestcloud.in/',forms:{purchase:true,general:true,support:true},stock:{'512gb':true,'1tb':true,backup:true}})});
  posts=[];dom.window.HTMLFormElement.prototype.submit=function(){posts.push({pairs:[...new dom.window.FormData(this)],action:this.action,method:this.method,enctype:this.enctype,target:this.target})};
 });
 afterEach(async()=>{if(root)await act(async()=>root.unmount());root=null;dom.window.close()});
@@ -45,8 +46,23 @@ for(const index of [0,1,2])test(`purchase ${index}: displayed selection and serv
  await mount('purchase',{configuration:UI.configs[index]});await valid();await submit();const p=lastPayload();assert.equal(p.configuration_id,UI.configs[index].id);assert.equal(Number(p.displayed_price),backend.NC_CATALOGUE_[p.configuration_id].price);
 });
 test('not configured, malformed/non-Google endpoint, and missing consent version never submit',async()=>{
- for(const extra of [{endpoint:''},{endpoint:'https://example.invalid/exec'},{endpoint:'https://script.google.com/macros/s/test/dev'},{endpoint:endpoint+'?secret=x'},{endpoint:'http://script.google.com/macros/s/test/exec'},{consentVersion:''}]){
+ for(const extra of [{endpoint:''},{endpoint:'https://example.invalid/exec'},{endpoint:'https://script.google.com/macros/s/test/dev'},{endpoint:endpoint+'?secret=x'},{endpoint:'http://script.google.com/macros/s/test/exec'}]){
   await mount('general',extra);assert.ok(container.querySelector('[type=submit]').disabled);await valid('general');await submit();assert.equal(posts.length,0);assert.match(container.textContent,/not accepting enquiries yet/);
+ }
+});
+test('public settings load current consent without relying on the build-time consent value',async()=>{
+ globalThis.fetch=async(url,options)=>{assert.equal(url,endpoint+'?resource=settings');assert.equal(options.credentials,'omit');assert.equal(options.cache,'no-store');return {ok:true,json:async()=>({available:true,consentVersion:'current-v2',returnUrl:'https://nestcloud.in/',forms:{purchase:true,general:true,support:true},stock:{'512gb':true,'1tb':true,backup:true}})}};
+ await mount('purchase',{consentVersion:''});await valid();await submit();assert.equal(lastPayload().consent_version,'current-v2');assert.equal(posts.length,1);
+});
+for(const id of ['512gb','1tb','backup'])test(`${id} unavailable in public settings prevents native POST and shows feedback`,async()=>{
+ globalThis.fetch=async()=>({ok:true,json:async()=>({available:true,consentVersion:'enquiry-v1',returnUrl:'https://nestcloud.in/',forms:{purchase:true,general:true,support:true},stock:{'512gb':true,'1tb':true,backup:true,[id]:false}})});
+ await mount('purchase',{configuration:UI.configs.find(c=>c.id===id)});assert.ok(container.querySelector('[type=submit]').disabled);assert.match(container.textContent,/configuration is currently unavailable/);await valid();await submit();assert.equal(posts.length,0);
+ await mount('general');await valid('general');await submit();assert.equal(posts.length,1);
+});
+test('missing, malformed, failed and disabled public settings fail closed rather than falling back to build config',async()=>{
+ for(const response of [null,{available:false},{available:true,consentVersion:'invalid consent',stock:{}},{available:false,consentVersion:'enquiry-v1',returnUrl:'https://nestcloud.in/',stock:{'512gb':true,'1tb':true,backup:true}}]){
+  globalThis.fetch=async()=>{if(response===null)throw Error('Network failed');return {ok:true,json:async()=>response}};
+  await mount();assert.ok(container.querySelector('[type=submit]').disabled);await valid();await submit();assert.equal(posts.length,0);
  }
 });
 test('client errors are inline, labelled, focus the first invalid field, and prevent native submission',async()=>{
@@ -120,7 +136,7 @@ test('a browser without secure randomness cannot submit',async()=>{
 
 test('native component payloads recover the original receipt through the actual backend processor',async()=>{
  let now=Date.now();const rows=[];
- const settings={ALLOW_SUBMISSIONS:'true',SPREADSHEET_ID:'synthetic-test-sheet-identifier',CONSENT_VERSION:'enquiry-v1'};
+ const settings={ALLOW_SUBMISSIONS:'true',SPREADSHEET_ID:'synthetic-test-sheet-identifier',CONSENT_VERSION:'enquiry-v1',STOCK_BACKUP_PLUS:'true',PURCHASE_FORM_ENABLED:'true',CONTACT_FORM_ENABLED:'true',SUPPORT_FORM_ENABLED:'true'};
  const services={properties:{getProperty:k=>settings[k]??null},hash:s=>createHash('sha256').update(s).digest('hex'),now:()=>now,uuid:randomUUID,lock:()=>({tryLock:()=>true,releaseLock(){}}),sheets:()=>({metadata:()=>rows.map(r=>r.slice(0,5)),append:(tab,values)=>rows.push(values)}),flush(){}};
  await mount();await valid();await submit();const first=backend.ncProcess_(serverInput(posts[0]),services);assert.equal(first.code,'success');
  await mount();await submit();const retry=backend.ncProcess_(serverInput(posts[1]),services);assert.equal(retry.receipt,first.receipt);assert.equal(rows.length,1);
@@ -161,7 +177,7 @@ test('fallback for an unconfigured form is visible before any personal input',as
 
 test('ambiguous server write failure followed by browser Back retries the same native payload and receipt',async()=>{
  const rows=[];let fail=true;
- const settings={ALLOW_SUBMISSIONS:'true',SPREADSHEET_ID:'synthetic-test-sheet-identifier',CONSENT_VERSION:'enquiry-v1'};
+ const settings={ALLOW_SUBMISSIONS:'true',SPREADSHEET_ID:'synthetic-test-sheet-identifier',CONSENT_VERSION:'enquiry-v1',STOCK_BACKUP_PLUS:'true',PURCHASE_FORM_ENABLED:'true',CONTACT_FORM_ENABLED:'true',SUPPORT_FORM_ENABLED:'true'};
  const services={properties:{getProperty:k=>settings[k]??null},hash:s=>createHash('sha256').update(s).digest('hex'),now:Date.now,uuid:randomUUID,lock:()=>({tryLock:()=>true,releaseLock(){}}),sheets:()=>({metadata:()=>rows.map(row=>row.slice(0,5)),append:(tab,values)=>rows.push(values)}),flush(){if(fail)throw Error('Acknowledgement lost')}};
  await mount();await valid();await submit();const first=lastPayload();assert.equal(backend.ncProcess_(serverInput(posts[0]),services).code,'unavailable');assert.equal(rows.length,1);assert.doesNotMatch(container.textContent,/enquiry is received\./);
  await back();await submit();assert.deepEqual(lastPayload(),first);fail=false;const retry=backend.ncProcess_(serverInput(posts[1]),services);assert.equal(retry.code,'success');assert.equal(retry.receipt,rows[0][1]);assert.equal(rows.length,1);
