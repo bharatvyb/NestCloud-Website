@@ -38,8 +38,8 @@ export async function loadPublicEnquirySettings(endpoint:string,signal:AbortSign
  if(!response.ok)throw new Error('Enquiry settings unavailable');
  const data=await response.json();
  if(!data || typeof data.available!=='boolean' || typeof data.consentVersion!=='string' || !validConsentVersion(data.consentVersion) || !['https://nestcloud.in/','https://bharatvyb.github.io/NestCloud-Website/'].includes(data.returnUrl) || !data.stock || !['512gb','1tb','backup'].every(id=>typeof data.stock[id]==='boolean'))throw new Error('Enquiry settings unavailable');
- // Defaults keep the existing TEST endpoint compatible until its approved update.
- const forms=data.forms===undefined?{purchase:true,general:true,support:true}:data.forms;
+ // A missing form projection must never authorize new submissions.
+ const forms=data.forms===undefined?{purchase:false,general:false,support:false}:data.forms;
  const banner=data.banner===undefined?{enabled:false,message:'Welcome to NestCloud!',link:''}:data.banner;
  const maintenance=data.maintenance===undefined?{enabled:false,message:'Website temporarily unavailable.'}:data.maintenance;
  const message=(value:unknown)=>typeof value==='string' && value.length<=500 && !/[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]/.test(value);

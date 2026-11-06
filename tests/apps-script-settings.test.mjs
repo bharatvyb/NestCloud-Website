@@ -48,6 +48,13 @@ test('public JSON is an exact allowlist, never accepts a caller-selected private
  assert.deepEqual(Object.keys(data).sort(),['available','banner','consentVersion','forms','maintenance','returnUrl','stock']);assert.equal(data.available,true);assert.deepEqual(data.stock,{'512gb':true,'1tb':true,backup:true});assert.deepEqual(data.forms,{purchase:true,general:true,support:true});assert.deepEqual(data.banner,{enabled:false,message:'Welcome to NestCloud!',link:''});assert.deepEqual(data.maintenance,{enabled:false,message:'Website temporarily unavailable.'});assert.doesNotMatch(output.text,/staff@|SPREADSHEET|NOTIFICATION|COOLDOWN|2026-11/);
  delete h.tabs.MasterSettings;h.c.ncSettingsCache_=null;assert.deepEqual(JSON.parse(h.c.doGet({parameter:{resource:'settings'}}).text),{available:false});
 });
+for(const [type,key] of [['purchase','PURCHASE_FORM_ENABLED'],['general','CONTACT_FORM_ENABLED'],['support','SUPPORT_FORM_ENABLED']])test(`public ${key} requires an explicit valid true value`,()=>{
+ const h=harness();h.migrate();h.tabs.MasterSettings.rows=h.tabs.MasterSettings.rows.filter(r=>r[0]!==key);
+ assert.equal(h.c.ncPublicSettings_(h.c.ncSettingsProperties_()).forms[type],false,'missing key is disabled');
+ for(const value of ['', 'yes', '1', 1, null]){h.set(key,value);h.c.ncSettingsCache_=null;h.c.ContentService={MimeType:{JSON:'json'},createTextOutput(text){return {text,setMimeType(){return this}}}};assert.deepEqual(JSON.parse(h.c.doGet({parameter:{resource:'settings'}}).text),{available:false},'malformed configuration fails closed');}
+ for(const value of [true,'TRUE','true']){h.set(key,value);h.c.ncSettingsCache_=null;assert.equal(h.c.ncPublicSettings_(h.c.ncSettingsProperties_()).forms[type],true)}
+ h.set(key,false);h.c.ncSettingsCache_=null;assert.equal(h.c.ncPublicSettings_(h.c.ncSettingsProperties_()).forms[type],false);
+});
 test('existing 13-key migration gains only eight V1 defaults, preserves edits and refreshes Sheet wiki',()=>{
  const h=harness();h.migrate();const oldKeys=Array.from(h.c.NC_SETTING_SPECS_).slice(0,13).map(s=>s[0]);h.tabs.MasterSettings.rows=h.tabs.MasterSettings.rows.filter(r=>r[0]==='Key'||oldKeys.includes(r[0]));h.set('STOCK_1TB',false);const original=JSON.stringify(h.tabs.MasterSettings.rows),legacy=JSON.stringify(h.legacy);
  assert.equal(h.migrate().added,8);assert.equal(JSON.stringify(h.tabs.MasterSettings.rows.slice(0,14)),original);assert.equal(JSON.stringify(h.legacy),legacy);assert.equal(h.c.getSetting_('PURCHASE_FORM_ENABLED',null),'true');assert.equal(h.c.getSetting_('BANNER_LINK',null),'');assert.equal(h.tabs.SettingsWiki.rows.length,23);assert.equal(h.migrate().added,0);

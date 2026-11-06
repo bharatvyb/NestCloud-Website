@@ -60,9 +60,9 @@ test('refresh aborts an overlapping old GET; late responses cannot overwrite new
  globalThis.fetch=async()=>({ok:true,json:async()=>({...defaults(),forms:{purchase:true,general:false,support:true}})});await tick();assert.equal(requests[0].options.signal.aborted,true);
  await act(async()=>resolveOld({ok:true,json:async()=>defaults()}));assert.equal(send().disabled,true);
 });
-test('legacy public response gets compatible V1 defaults but malformed new fields fail closed',async()=>{
- const old=defaults();delete old.forms;delete old.banner;delete old.maintenance;globalThis.fetch=async()=>({ok:true,json:async()=>old});const parsed=await UI.loadPublicEnquirySettings(endpoint,new AbortController().signal);assert.deepEqual(parsed.forms,{purchase:true,general:true,support:true});assert.equal(parsed.banner.enabled,false);assert.equal(parsed.maintenance.enabled,false);
- for(const change of [{forms:null},{forms:{purchase:'true',general:true,support:true}},{banner:{enabled:true,message:'Hello',link:'javascript:alert(1)'}},{banner:{enabled:true,message:'Hello',link:'https://user:pass@example.invalid'}},{banner:{enabled:true,message:'x'.repeat(501),link:''}},{maintenance:{enabled:'false',message:'Wait'}}]){
+test('missing form projection disables forms and malformed fields fail closed',async()=>{
+ const old=defaults();delete old.forms;delete old.banner;delete old.maintenance;globalThis.fetch=async()=>({ok:true,json:async()=>old});const parsed=await UI.loadPublicEnquirySettings(endpoint,new AbortController().signal);assert.deepEqual(parsed.forms,{purchase:false,general:false,support:false});assert.equal(parsed.banner.enabled,false);assert.equal(parsed.maintenance.enabled,false);await render(form('general'));assert.equal(send().disabled,true);
+ for(const change of [{forms:null},{forms:{purchase:'true',general:true,support:true}},{forms:{purchase:true,support:true}},{forms:{purchase:true,general:true,support:null}},{banner:{enabled:true,message:'Hello',link:'javascript:alert(1)'}},{banner:{enabled:true,message:'Hello',link:'https://user:pass@example.invalid'}},{banner:{enabled:true,message:'x'.repeat(501),link:''}},{maintenance:{enabled:'false',message:'Wait'}}]){
   globalThis.fetch=async()=>({ok:true,json:async()=>({...defaults(),...change})});await assert.rejects(()=>UI.loadPublicEnquirySettings(endpoint,new AbortController().signal));
  }
 });

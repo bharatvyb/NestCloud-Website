@@ -8,6 +8,7 @@ var NC_TABS_ = ['Purchase Enquiries', 'General Contact', 'Technical Support'];
 var NC_HEADERS_ = ['Submission ID', 'Enquiry reference', 'Received UTC', 'Payload SHA256', 'Email SHA256', 'Type', 'Full name', 'Email', 'Mobile', 'Delivery PIN', 'Message', 'Consent version', 'Consent received UTC', 'Configuration ID', 'Configuration', 'Product price INR', 'Currency', 'Personal storage', 'Backup SSD', 'Order reference', 'Device serial', 'Issue category', 'Status'];
 
 // Only the spreadsheet bootstrap remains in Script Properties at runtime.
+// Spec defaults provision explicit values during migration; they do not enable missing runtime switches.
 var NC_SETTING_SPECS_ = [
   ['ALLOW_SUBMISSIONS','Enquiry intake switch','TRUE/FALSE','false','All forms','Public'],
   ['CONSENT_VERSION','Approved consent version','1–40 letters/digits/._- ',null,'All forms','Public'],
@@ -101,7 +102,7 @@ function ncPublicSettings_(properties) {
   if(!consent || !/^[a-zA-Z0-9._-]{1,40}$/.test(consent))throw new Error('Settings consent');
   return {available:properties.getProperty('ALLOW_SUBMISSIONS')==='true',consentVersion:consent,
     returnUrl:ncSafeReturn_(properties.getProperty('RETURN_URL')),
-    forms:{purchase:properties.getProperty('PURCHASE_FORM_ENABLED')!=='false',general:properties.getProperty('CONTACT_FORM_ENABLED')!=='false',support:properties.getProperty('SUPPORT_FORM_ENABLED')!=='false'},
+    forms:{purchase:properties.getProperty('PURCHASE_FORM_ENABLED')==='true',general:properties.getProperty('CONTACT_FORM_ENABLED')==='true',support:properties.getProperty('SUPPORT_FORM_ENABLED')==='true'},
     banner:{enabled:properties.getProperty('BANNER_ENABLED')==='true',message:properties.getProperty('BANNER_MESSAGE')??'Welcome to NestCloud!',link:properties.getProperty('BANNER_LINK')??''},
     maintenance:{enabled:properties.getProperty('SITE_MAINTENANCE')==='true',message:properties.getProperty('MAINTENANCE_MESSAGE')??'Website temporarily unavailable.'},
     stock:{'512gb':properties.getProperty('STOCK_512GB')==='true','1tb':properties.getProperty('STOCK_1TB')==='true',backup:properties.getProperty('STOCK_BACKUP_PLUS')==='true'}};
@@ -256,7 +257,7 @@ function ncProcess_(event, services) {
     if (services.properties.getProperty('SITE_MAINTENANCE')==='true') {
       return {code:'maintenance',title:'NestCloud website maintenance',message:services.properties.getProperty('MAINTENANCE_MESSAGE')??'Website temporarily unavailable.'};
     }
-    if (services.properties.getProperty(ncFormKey_(input.enquiry_type))==='false') {
+    if (services.properties.getProperty(ncFormKey_(input.enquiry_type))!=='true') {
       return {code:'form_disabled',title:'This enquiry form is temporarily unavailable',message:'No new enquiry was saved. Please use the contact and support information on NestCloud.'};
     }
     if (input.consent_version !== config.consentVersion) return ncError_('invalid');

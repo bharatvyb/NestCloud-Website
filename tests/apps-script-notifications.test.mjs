@@ -11,7 +11,7 @@ function saved(n=1,type='purchase',time='2026-11-03T12:00:00.000Z') {
 }
 function harness(overrides={}) {
   const c=vm.createContext({Date,Number,JSON,Object,Array,String,Error});vm.runInContext(source,c);
-  const settings={SPREADSHEET_ID:'synthetic-private-sheet-reference',CONSENT_VERSION:'enquiry-test-v1',ALLOW_SUBMISSIONS:'true',STOCK_512GB:'true',STOCK_1TB:'true',STOCK_BACKUP_PLUS:'true',NOTIFICATIONS_ENABLED:'true',NOTIFICATION_START_UTC:'2026-11-03T12:00:00.000Z',...overrides};
+  const settings={SPREADSHEET_ID:'synthetic-private-sheet-reference',CONSENT_VERSION:'enquiry-test-v1',ALLOW_SUBMISSIONS:'true',STOCK_512GB:'true',STOCK_1TB:'true',STOCK_BACKUP_PLUS:'true',PURCHASE_FORM_ENABLED:'true',CONTACT_FORM_ENABLED:'true',SUPPORT_FORM_ENABLED:'true',NOTIFICATIONS_ENABLED:'true',NOTIFICATION_START_UTC:'2026-11-03T12:00:00.000Z',...overrides};
   const properties={getProperty:k=>settings[k]??null,setProperty(k,v){settings[k]=v;}};
   const rows=[],sources=[],mails=[],flags={locked:false,quota:100,flushes:0};const clock={now:Date.parse(settings.NOTIFICATION_START_UTC || '2026-11-03T12:00:00Z')};let serial=100;
   const store={
