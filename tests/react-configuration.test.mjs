@@ -35,7 +35,7 @@ test('actual product and review controls default to 1 TB; explicit URLs override
  const container=await mount(UI.Configurator,UI.OrderPage);
  for(const f of fields(container))assert.match(chosen(f),/512 GB/);
  assert.equal(sessionStorage.getItem('nestcloud.configuration'),'512gb');
- assert.match(container.querySelector('.summary-total').textContent,/49,900/);
+ assert.match(container.querySelector('.summary-total').textContent,/60,499/);
 });
 test('all mounted configurators and review controls synchronize, including native radio groups',async()=>{
  const container=await mount(UI.Configurator,UI.Configurator,UI.OrderPage);
@@ -44,7 +44,7 @@ test('all mounted configurators and review controls synchronize, including nativ
  await click(fields(container)[0].querySelectorAll('input')[2]);
  for(const f of fields(container))assert.match(chosen(f),/Backup Plus/);
  assert.equal(query(),'backup');assert.equal(sessionStorage.getItem('nestcloud.configuration'),'backup');
- assert.match(container.querySelector('.summary-total').textContent,/81,900/);
+ assert.match(container.querySelector('.summary-total').textContent,/99,499/);
  for(const a of container.querySelectorAll('a[href*="/order?"]'))assert.match(a.getAttribute('href'),/configuration=backup/);
 });
 test('selection replaces its entry while preserving history state, unrelated query and fragment',async()=>{
@@ -112,12 +112,14 @@ test('device fetch priority is reserved for homepage and family intros, not conf
 });
 
 const policySources=JSON.parse(await readFile(new URL('../docs/policy-source-manifest.json',import.meta.url),'utf8'));
+const originalPolicies=JSON.parse(await readFile(new URL('../src/policies.json',import.meta.url),'utf8'));
 for(const policy of policySources)test(`complete policy wording matches official capture: ${policy.path}`,()=>{
  const html=renderToStaticMarkup(React.createElement(UI.PolicyDocument,{path:policy.path}));
  const rendered=new JSDOM(html);const body=rendered.window.document.querySelector('[data-policy-body]');
  const text=[...body.children].flatMap(e=>['UL','OL'].includes(e.tagName)?[...e.children].map(li=>li.textContent):[e.textContent]).join(' ').replace(/\s+/g,' ').trim();
- assert.equal(createHash('sha256').update(text).digest('hex'),policy.normalizedBodySHA256);
- assert.ok(rendered.window.document.body.textContent.includes(policy.sourceUpdated));
+ if(['/policies/tc','/policies/shipping--delivery','/policies/cancellation--refund','/policies/sla'].includes(policy.path)){
+  const original=originalPolicies.find(p=>p.path===policy.path).blocks.flatMap(b=>b.type==='list'?b.items:[b.text]).join(' ').replace(/\s+/g,' ').trim();assert.equal(createHash('sha256').update(original).digest('hex'),policy.normalizedBodySHA256,'original contractual source remains intact');assert.match(text,/DRAFT FOR OWNER REVIEW/);assert.match(text,/full[ -]payment/i);assert.doesNotMatch(text,/₹10,000|10 working days|preorder advance|remaining balance/i);
+ }else{assert.equal(createHash('sha256').update(text).digest('hex'),policy.normalizedBodySHA256);assert.ok(rendered.window.document.body.textContent.includes(policy.sourceUpdated));}
  rendered.window.close();
 });
 test('Helpful details footer destinations are all local policy pages',()=>{
@@ -147,8 +149,9 @@ test('all 15 pages use customer-facing launch copy while preserving product limi
  assert.match(contact.getAttribute('href'),/^\/NestCloud-Website\/purchase-enquiry\?configuration=1tb$/);
  await click(order.querySelectorAll('input')[2]);
  assert.match(contact.getAttribute('href'),/configuration=backup$/);
- assert.match(order.querySelector('.summary-total').textContent,/81,900/);
- assert.match(order.textContent,/before you pay/);
+ assert.match(order.querySelector('.summary-total').textContent,/99,499/);
+ assert.match(order.textContent,/GST included/);
+ assert.match(order.textContent,/shipping pending approval/);
  const os=await mount(UI.OSPage);
  assert.match(os.textContent,/Planned · NestCloud OS v1.1/);
  assert.match(os.textContent,/not currently available features/);

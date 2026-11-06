@@ -1,5 +1,19 @@
 # SettingsWiki — MasterSettings
 
+## PR #7 checkout extension (prepared, not deployed)
+
+Five additional public settings bring the application table to 26 keys. The existing shared reader, migration and generated Sheet SettingsWiki are reused. Deploy compatible backend code before adding these keys: older strict readers reject unknown keys. No Sheet migration or deployment is authorized by the code change.
+
+| Key | Description | Allowed values | Default | Used in | Visibility | Redeployment |
+| --- | --- | --- | --- | --- | --- | --- |
+| CHECKOUT_ENABLED | Website hosted-checkout switch; does not revoke direct provider URLs | TRUE/FALSE | FALSE | Public projection, CheckoutPanel | Public boolean | No after compatible backend/frontend deployment |
+| CHECKOUT_MODE | Reviewed destination environment; not automatic provider-mode detection | test/live | test | CheckoutPanel | Public | No; live code gate remains FALSE pending separate approval |
+| CHECKOUT_512GB_URL | Reviewed fixed-price 512 GB provider product URL | Blank or exact HTTPS pages.razorpay.com/stores/st_ID/product/li_ID; no query, credentials or fragment | blank | CheckoutPanel | Public | No |
+| CHECKOUT_1TB_URL | Reviewed fixed-price 1 TB provider product URL | Same restricted product URL format | blank | CheckoutPanel | Public | No |
+| CHECKOUT_BACKUP_PLUS_URL | Reviewed fixed-price 1 TB + Backup Plus provider product URL | Same restricted product URL format | blank | CheckoutPanel | Public | No |
+
+Missing checkout configuration remains disabled. Website checkout additionally requires global intake, Purchase form, stock and maintenance checks. Backend enquiry gates remain authoritative for enquiries; Razorpay is authoritative for offsite orders and payments. No API secrets, payment amount overrides or payment-success query parameters are exposed. Product prices are now owner-approved ₹60,499 / ₹72,499 / ₹99,499, GST-inclusive; historical receipts retain their original saved amounts. The historical PR #6 notes below describe its pre-payment baseline, not a live payment rollout.
+
 Status: **implemented in draft PR #6; live activation must be verified separately**. This feature is stacked on the unmerged notification-hardening PR so its durable send-boundary and completion-lock fixes are preserved. No merge or public website deployment is implied.
 
 ## Current implementation findings

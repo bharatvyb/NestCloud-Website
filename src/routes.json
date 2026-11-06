@@ -1,13 +1,13 @@
 [
   {
     "path": "/",
-    "title": "NestCloud Family — Your family's cloud, at home.",
-    "description": "Bring your photos, videos and files home with NestCloud Family. One product, three storage configurations, no mandatory NestCloud subscriptions."
+    "title": "NestCloud Home — Your family's cloud, at home.",
+    "description": "Bring your photos, videos and files home with NestCloud Home. One product, three storage configurations, no mandatory NestCloud subscriptions."
   },
   {
     "path": "/family",
-    "title": "NestCloud Family — Storage, features & specifications",
-    "description": "Explore NestCloud Family hardware, included software, storage configurations, box contents and the one-year limited hardware warranty."
+    "title": "NestCloud Home — Storage, features & specifications",
+    "description": "Explore NestCloud Home hardware, included software, storage configurations, box contents and the one-year limited hardware warranty."
   },
   {
     "path": "/nestcloud-os",
@@ -27,7 +27,7 @@
   {
     "path": "/backup-plus",
     "title": "NestCloud Backup Plus — A second SSD for protection",
-    "description": "Understand the NestCloud Family Backup Plus configuration: 1 TB usable storage and a separate physical 1 TB SSD for backup protection."
+    "description": "Understand the NestCloud Home Backup Plus configuration: 1 TB usable storage and a separate physical 1 TB SSD for backup protection."
   },
   {
     "path": "/support",
@@ -36,18 +36,18 @@
   },
   {
     "path": "/order",
-    "title": "Your NestCloud Family — Review your configuration",
-    "description": "Choose your NestCloud Family storage configuration, review the product price and contact our team for availability, delivery and ordering."
+    "title": "Your NestCloud Home — Review your configuration",
+    "description": "Choose your NestCloud Home storage configuration, review the product price and contact our team for availability, delivery and ordering."
   },
   {
     "path": "/policies",
     "title": "NestCloud — Policies & purchase information",
-    "description": "Read official NestCloud policies for terms, privacy, shipping, refunds, warranty and support before purchasing."
+    "description": "Review NestCloud policies and proposed full-payment purchase terms. Draft commercial terms require owner approval before live sales."
   },
   {
     "path": "/policies/tc",
     "title": "Terms & Conditions — NestCloud",
-    "description": "Read the NestCloud terms & conditions policy. Last updated: 7 August 2026."
+    "description": "Draft NestCloud full-payment terms for owner review; not approved for live sales."
   },
   {
     "path": "/policies/privacy-policy",
@@ -57,12 +57,12 @@
   {
     "path": "/policies/shipping--delivery",
     "title": "Shipping & Delivery Policy — NestCloud",
-    "description": "Read the NestCloud shipping & delivery policy. Last updated: 7 August 2026."
+    "description": "Draft India shipping and delivery terms. Shipping charges and dispatch commitments await owner approval."
   },
   {
     "path": "/policies/cancellation--refund",
     "title": "Cancellation & Refund Policy — NestCloud",
-    "description": "Read the NestCloud cancellation & refund policy. Last updated: 7 August 2026."
+    "description": "Draft NestCloud cancellation and refund terms for owner review; not approved for live sales."
   },
   {
     "path": "/policies/warranty",
@@ -72,12 +72,12 @@
   {
     "path": "/policies/sla",
     "title": "Service Level Agreement — NestCloud",
-    "description": "Read the NestCloud service level agreement. Last updated: 17 Sep 2026."
+    "description": "Review proposed NestCloud service terms with full-payment purchase wording; owner approval pending."
   },
   {
     "path": "/purchase-enquiry",
-    "title": "Enquire to Buy — NestCloud Family",
-    "description": "Send a NestCloud Family purchase enquiry with your selected storage configuration, product price and delivery PIN code."
+    "title": "Enquire to Buy — NestCloud Home",
+    "description": "Send a NestCloud Home purchase enquiry with your selected storage configuration, product price and delivery PIN code."
   },
   {
     "path": "/contact",

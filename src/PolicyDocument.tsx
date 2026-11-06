@@ -1,13 +1,14 @@
 import React, { useEffect } from 'react';
 import { ArrowLeft, ArrowUpRight, ChevronDown, FileText } from 'lucide-react';
 import documents from './policies.json';
+import {commercePolicyDrafts} from './commerce-policies';
 import { policyLinks } from './content';
 import { sitePath } from './site';
 import './policies.css';
 
 export default function PolicyDocument({path}:{path:string}) {
  useEffect(()=>{const id=window.location.hash.slice(1);if(id)document.getElementById(id)?.scrollIntoView({behavior:'instant',block:'start'})},[]);
- const policy=documents.find(document=>document.path===path)!;
+ const policy=commercePolicyDrafts[path]||documents.find(document=>document.path===path)!;
  const headings=policy.blocks.filter(block=>block.type==='heading');
  const contents=<ol>{headings.map(block=><li key={block.id}><a href={`#${block.id}`}>{block.text}</a></li>)}</ol>;
  return <>

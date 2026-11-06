@@ -38,7 +38,7 @@ for(const type of ['purchase','general','support'])test(`${type}: native POST us
  await submit();assert.equal(posts.length,1);const post=posts[0];assert.equal(post.method,'post');assert.equal(post.enctype,'application/x-www-form-urlencoded');assert.equal(post.target,'_self');assert.equal(post.action,endpoint);
  assert.equal(new Set(post.pairs.map(x=>x[0])).size,post.pairs.length,'no duplicate fields');assert.ok(UI.uuidPattern.test(lastPayload().submission_id));
  const normalized=backend.ncValidate_(serverInput(post),{consentVersion:'enquiry-v1'});assert.ok(normalized,'real Apps Script validator accepts native form payload');assert.equal(normalized.enquiry_type,type);assert.equal(normalized.mobile,'+919876543210');
- if(type==='purchase'){assert.equal(lastPayload().configuration_id,'backup');assert.equal(lastPayload().displayed_price,'81900');assert.match(container.textContent,/₹81,900/);for(const key of ['device_serial','order_reference','issue_category'])assert.equal(container.querySelector(`[name=${key}]`),null)}
+ if(type==='purchase'){assert.equal(lastPayload().configuration_id,'backup');assert.equal(lastPayload().displayed_price,'99499');assert.match(container.textContent,/₹99,499/);for(const key of ['device_serial','order_reference','issue_category'])assert.equal(container.querySelector(`[name=${key}]`),null)}
  else {for(const key of ['delivery_pin','configuration_id','displayed_price'])assert.equal(container.querySelector(`[name=${key}]`),null)}
  assert.doesNotMatch(container.textContent,/successfully sent|enquiry has been received/i);assert.match(container.textContent,/wait for Google’s confirmation/);
 });
@@ -86,11 +86,11 @@ test('equivalent normalized email, mobile and outer whitespace remain a genuine 
  await mount();await valid();await submit();const id=lastPayload().submission_id;await back();await fill('email','TEST@EXAMPLE.INVALID');await fill('mobile','9876543210');await fill('full_name',' Test Customer ');await submit();assert.equal(lastPayload().submission_id,id);
 });
 test('new configuration changes UUID and displayed price; unmodified retry does not',async()=>{
- await mount();await valid();await submit();const id=lastPayload().submission_id;await back();await act(async()=>root.render(React.createElement(UI.EnquiryForm,props('purchase',{configuration:UI.configs[0]}))));await submit();assert.notEqual(lastPayload().submission_id,id);assert.equal(lastPayload().displayed_price,'49900');
+ await mount();await valid();await submit();const id=lastPayload().submission_id;await back();await act(async()=>root.render(React.createElement(UI.EnquiryForm,props('purchase',{configuration:UI.configs[0]}))));await submit();assert.notEqual(lastPayload().submission_id,id);assert.equal(lastPayload().displayed_price,'60499');
 });
 test('purchase wrapper can use existing URL/session configuration store without a second selection store',async()=>{
  function Connected(){const [configuration]=UI.useConfiguration();return React.createElement(UI.EnquiryForm,props('purchase',{configuration}))}
- await mount();await act(async()=>root.render(React.createElement(Connected)));await valid();await act(async()=>history.pushState(null,'','?configuration=512gb'));await submit();assert.equal(lastPayload().configuration_id,'512gb');assert.equal(lastPayload().displayed_price,'49900');
+ await mount();await act(async()=>root.render(React.createElement(Connected)));await valid();await act(async()=>history.pushState(null,'','?configuration=512gb'));await submit();assert.equal(lastPayload().configuration_id,'512gb');assert.equal(lastPayload().displayed_price,'60499');
 });
 test('busy guard prevents double POST; pageshow restores retry after browser Back',async()=>{
  await mount();await valid();await submit();await submit();assert.equal(posts.length,1);assert.ok(container.querySelector('[type=submit]').disabled);await back();assert.equal(container.querySelector('[type=submit]').disabled,false);await submit();assert.equal(posts.length,2);assert.equal(Object.fromEntries(posts[0].pairs).submission_id,lastPayload().submission_id);

@@ -1,8 +1,8 @@
 /** NestCloud enquiries. Public entry points are doGet/doPost only. */
 var NC_CATALOGUE_ = Object.freeze({
-  '512gb': { name: '512 GB', price: 49900, personal: '512 GB', backup: '' },
-  '1tb': { name: '1 TB', price: 59900, personal: '1 TB', backup: '' },
-  'backup': { name: '1 TB + Backup Plus', price: 81900, personal: '1 TB', backup: '1 TB' }
+  '512gb': { name: '512 GB', price: 60499, personal: '512 GB', backup: '' },
+  '1tb': { name: '1 TB', price: 72499, personal: '1 TB', backup: '' },
+  'backup': { name: '1 TB + Backup Plus', price: 99499, personal: '1 TB', backup: '1 TB' }
 });
 var NC_TABS_ = ['Purchase Enquiries', 'General Contact', 'Technical Support'];
 var NC_HEADERS_ = ['Submission ID', 'Enquiry reference', 'Received UTC', 'Payload SHA256', 'Email SHA256', 'Type', 'Full name', 'Email', 'Mobile', 'Delivery PIN', 'Message', 'Consent version', 'Consent received UTC', 'Configuration ID', 'Configuration', 'Product price INR', 'Currency', 'Personal storage', 'Backup SSD', 'Order reference', 'Device serial', 'Issue category', 'Status'];
@@ -30,7 +30,12 @@ var NC_SETTING_SPECS_ = [
   ['BANNER_MESSAGE','Plain-text announcement','Text up to 500 characters','Welcome to NestCloud!','Site banner','Public'],
   ['BANNER_LINK','Optional announcement destination','Blank or HTTPS URL without credentials','','Site banner','Public'],
   ['SITE_MAINTENANCE','Block new enquiries during maintenance','TRUE/FALSE','false','Site notice and backend','Public'],
-  ['MAINTENANCE_MESSAGE','Plain-text maintenance notice','Text up to 500 characters','Website temporarily unavailable.','Site notice and backend','Public']
+  ['MAINTENANCE_MESSAGE','Plain-text maintenance notice','Text up to 500 characters','Website temporarily unavailable.','Site notice and backend','Public'],
+  ['CHECKOUT_ENABLED','Explicit hosted checkout gate; keep FALSE until approved','TRUE/FALSE','false','Purchase checkout','Public'],
+  ['CHECKOUT_MODE','Provider resource mode; does not switch Razorpay itself','test/live','test','Purchase checkout label','Public'],
+  ['CHECKOUT_512GB_URL','Reviewed fixed-price Razorpay product destination','Blank or Razorpay Webstore product HTTPS URL','','Purchase checkout','Public'],
+  ['CHECKOUT_1TB_URL','Reviewed fixed-price Razorpay product destination','Blank or Razorpay Webstore product HTTPS URL','','Purchase checkout','Public'],
+  ['CHECKOUT_BACKUP_PLUS_URL','Reviewed fixed-price Razorpay product destination','Blank or Razorpay Webstore product HTTPS URL','','Purchase checkout','Public']
 ];
 var ncSettingsCache_ = null;
 function ncStockKey_(id) { return {'512gb':'STOCK_512GB','1tb':'STOCK_1TB',backup:'STOCK_BACKUP_PLUS'}[id]; }
@@ -60,12 +65,14 @@ function ncReadSettings_(sheet) {
 }
 function ncSettingValue_(key,value) {
   var raw=String(value);
-  if(['ALLOW_SUBMISSIONS','NOTIFICATIONS_ENABLED','STOCK_512GB','STOCK_1TB','STOCK_BACKUP_PLUS','PURCHASE_FORM_ENABLED','CONTACT_FORM_ENABLED','SUPPORT_FORM_ENABLED','BANNER_ENABLED','SITE_MAINTENANCE'].indexOf(key)>=0) {
+  if(['ALLOW_SUBMISSIONS','NOTIFICATIONS_ENABLED','STOCK_512GB','STOCK_1TB','STOCK_BACKUP_PLUS','PURCHASE_FORM_ENABLED','CONTACT_FORM_ENABLED','SUPPORT_FORM_ENABLED','BANNER_ENABLED','SITE_MAINTENANCE','CHECKOUT_ENABLED'].indexOf(key)>=0) {
     if(!/^(true|false)$/i.test(raw))throw new Error('Settings boolean');
     return raw.toLowerCase();
   }
   if(key==='CONSENT_VERSION' && !/^[a-zA-Z0-9._-]{1,40}$/.test(raw))throw new Error('Settings consent');
   if(key==='RETURN_URL' && raw!==ncSafeReturn_(raw))throw new Error('Settings return URL');
+  if(key==='CHECKOUT_MODE' && ['test','live'].indexOf(raw)<0)throw new Error('Checkout mode');
+  if(/^CHECKOUT_.*_URL$/.test(key) && raw!=='' && !/^https:\/\/pages\.razorpay\.com\/stores\/st_[A-Za-z0-9]+\/product\/li_[A-Za-z0-9]+$/.test(raw))throw new Error('Checkout destination');
   if(key==='BANNER_LINK' && !ncValidBannerLink_(raw))throw new Error('Settings banner link');
   if((key==='BANNER_MESSAGE' || key==='MAINTENANCE_MESSAGE') && (typeof value!=='string' || raw.length>500 || /[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]/.test(raw)))throw new Error('Settings message');
   if(key==='NOTIFICATION_START_UTC')ncNotificationStart_({getProperty:function(){return raw;}});
@@ -105,6 +112,7 @@ function ncPublicSettings_(properties) {
     forms:{purchase:properties.getProperty('PURCHASE_FORM_ENABLED')==='true',general:properties.getProperty('CONTACT_FORM_ENABLED')==='true',support:properties.getProperty('SUPPORT_FORM_ENABLED')==='true'},
     banner:{enabled:properties.getProperty('BANNER_ENABLED')==='true',message:properties.getProperty('BANNER_MESSAGE')??'Welcome to NestCloud!',link:properties.getProperty('BANNER_LINK')??''},
     maintenance:{enabled:properties.getProperty('SITE_MAINTENANCE')==='true',message:properties.getProperty('MAINTENANCE_MESSAGE')??'Website temporarily unavailable.'},
+    checkout:{enabled:properties.getProperty('CHECKOUT_ENABLED')==='true',mode:properties.getProperty('CHECKOUT_MODE')??'test',urls:{'512gb':properties.getProperty('CHECKOUT_512GB_URL')??'','1tb':properties.getProperty('CHECKOUT_1TB_URL')??'',backup:properties.getProperty('CHECKOUT_BACKUP_PLUS_URL')??''}},
     stock:{'512gb':properties.getProperty('STOCK_512GB')==='true','1tb':properties.getProperty('STOCK_1TB')==='true',backup:properties.getProperty('STOCK_BACKUP_PLUS')==='true'}};
 }
 /** Editor-only migration: retains every legacy property and never touches enquiry/outbox rows. */

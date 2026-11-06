@@ -1,6 +1,6 @@
 # Razorpay commerce integration — inspection and approval gates
 
-Status: Phase 1 assessment only. No checkout code, provider listing, Google configuration, live price, payment, order or deployment has been changed. Commercial decisions and test-resource approval are required before implementation. Continue all payment-readiness work on this branch/PR.
+Status: Historical Phase 1 inspection below. The owner subsequently approved the NestCloud Home name, new GST-inclusive prices and ONE Test Mode store. See [the implementation and release report](RAZORPAY-V1-IMPLEMENTATION.md) for current code, provider evidence, remaining gates and release order. Old prices below describe the untouched live store, NOT the current proposed catalogue.
 
 ## Dependency baseline
 
