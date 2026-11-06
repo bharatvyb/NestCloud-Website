@@ -66,6 +66,8 @@ Primary vendor references:
 
 PASS (inspection only): PR dependencies/c6349ae ancestry; catalogue price consistency; existing active store/public product routes; outdated names/descriptions/promotional and preorder terms; Test Mode availability and empty Webstore list.
 
+Draft PR #7 targets `feature/master-settings`. The inherited review workflow currently filters PR bases to main and the earlier backend/notification branches, so it does not run for this new stacked base. No payment CI pass is claimed. Add that base to the review-only trigger on this Razorpay branch when implementation begins, without touching the Pages publication workflow or existing PRs, then require all test/build/export checks.
+
 NOT RUN / BLOCKED: success/failure/cancel payments, customer receipt/order references, shipping/tax correctness, duplicates, stock bypass prevention, mobile checkout, order reconciliation and live payment activation. No payment test passed merely because a product page loaded. No payment reference or successful charge has been generated. The inherited PR #6 has 263 passing tests; those are not Razorpay coverage.
 
 ## Single release plan for all three PRs
